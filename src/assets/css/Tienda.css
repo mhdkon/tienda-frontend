@@ -1,0 +1,147 @@
+/* Productos modernos */
+.productos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.producto-card {
+  background: white;
+  border-radius: 15px;
+  padding: 15px;
+  width: 200px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.producto-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.producto-card img {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+/* Botones añadir */
+.producto-card button.add {
+  background-color: #10b981;
+  color: white;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.producto-card button.add:hover {
+  background-color: #059669;
+}
+
+/* Toast moderno */
+.toast-anadido {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #111;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  animation: slideUp 0.5s ease;
+  cursor: pointer;
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(20px);}
+  100% { opacity: 1; transform: translateY(0);}
+}
+
+/* Carrito modernizado */
+.carrito-container, .ticket {
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 15px;
+  background: white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+
+.ticket:hover {
+  transform: translateY(-2px);
+}
+
+/* Login animaciones */
+.login-anim {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.input-anim {
+  transition: all 0.3s ease;
+}
+
+.input-anim:focus {
+  transform: scale(1.05);
+  border-color: #ff6f61;
+  box-shadow: 0 0 8px rgba(255, 111, 97, 0.5);
+  outline: none;
+}
+
+.btn-anim {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-anim:hover {
+  transform: scale(1.05);
+  background-color: #ff6f61;
+  color: #fff;
+}
+
+.btn-anim-outline {
+  transition: all 0.3s ease;
+  border: 2px solid #ff6f61;
+  background: transparent;
+  color: #ff6f61;
+  cursor: pointer;
+}
+
+.btn-anim-outline:hover {
+  background-color: #ff6f61;
+  color: white;
+  transform: scale(1.05);
+}
+
+/* Cards productos animación */
+.producto-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.producto-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* FadeIn general */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Toast animación */
+.toast-anadido {
+  animation: slideIn 0.5s forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

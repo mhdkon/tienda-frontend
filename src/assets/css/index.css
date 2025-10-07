@@ -1,0 +1,539 @@
+/* === Reset y generales === */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f6f8;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  line-height: 1.6;
+}
+
+.menu-superior {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  background-color: #007bff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: white;
+  gap: 10px;
+
+  position: sticky;   /* <-- hace que se quede fijo */
+  top: 0;             /* <-- posición desde arriba */
+  z-index: 1000;      /* <-- para que esté encima de otros elementos */
+}
+
+.container {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 20px;
+  width: 100%;
+}
+
+/* === Menú inicial, login y register === */
+.menu-inicial, .login-register {
+  text-align: center;
+}
+
+.menu-inicial h1, .login-register h2 {
+  margin-bottom: 20px;
+}
+
+.menu-inicial button, .login-register button {
+  margin: 10px;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 12px;
+  background-color: #3b82f6;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: 0.3s;
+  width: 200px;
+  max-width: 90%;
+}
+
+.menu-inicial button:hover, .login-register button:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+/* === Menú superior === */
+.menu-superior h3 { 
+  margin: 0; 
+  font-size: 1rem; 
+  flex: 1;
+  min-width: 150px;
+}
+
+.menu-superior button {
+  background-color: white;
+  color: #007bff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 5px 0;
+  transition: 0.3s;
+  white-space: nowrap;
+}
+
+.menu-superior button:hover { 
+  background-color: #e0e7ff; 
+  transform: translateY(-2px);
+}
+
+/* === Productos en grid - Adaptable === */
+.productos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.producto-card {
+  background-color: white;
+  border-radius: 14px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.producto-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.producto-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.producto-card h4 {
+  margin: 5px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.producto-card p {
+  margin: 5px 0 12px 0;
+  font-weight: 500;
+}
+
+.producto-card button.add {
+  background-color: #28a745;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s;
+  width: 100%;
+}
+
+.producto-card button.add:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+}
+
+/* === Inputs === */
+input, select {
+  padding: 10px 12px;
+  margin: 6px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* === Toast producto añadido === */
+.toast-anadido {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #111;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: 0.3s;
+  max-width: 300px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.toast-anadido:hover { 
+  opacity: 0.9; 
+  transform: translateY(-2px);
+}
+
+/* === Carrito tickets === */
+.carrito-lista-tickets {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ticket {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 12px 15px;
+  margin-bottom: 14px;
+  border-left: 4px dashed #3b82f6;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  transition: transform 0.3s, box-shadow 0.3s;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ticket:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0,0,0,0.12);
+}
+
+.ticket img {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  flex-shrink: 0;
+}
+
+.ticket-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+  min-width: 120px;
+}
+
+.ticket-info h4 { 
+  margin: 0; 
+  font-size: 0.95rem; 
+  font-weight: 600; 
+}
+
+.ticket-info p { 
+  margin: 2px 0; 
+  font-size: 0.85rem; 
+  color: #555; 
+}
+
+.ticket-info .estado {
+  display: inline-block;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 4px;
+  width: fit-content;
+}
+
+.pagado { background-color: #d1fae5; color: #065f46; }
+.no-pagado { background-color: #fee2e2; color: #991b1b; }
+
+/* === Botones ticket === */
+.ticket-acciones {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.ticket-acciones button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: 0.3s;
+  white-space: nowrap;
+}
+
+.ticket-acciones button.pagar { background-color: #3b82f6; color: white; }
+.ticket-acciones button.pagar:hover { 
+  background-color: #2563eb; 
+  transform: translateY(-2px);
+}
+
+.ticket-acciones button.borrar { background-color: #ef4444; color: white; }
+.ticket-acciones button.borrar:hover { 
+  background-color: #dc2626; 
+  transform: translateY(-2px);
+}
+
+.ticket-acciones button.editar { background-color: #f59e0b; color: white; }
+.ticket-acciones button.editar:hover { 
+  background-color: #b45309; 
+  transform: translateY(-2px);
+}
+
+/* === Edición de carrito dentro del ticket === */
+.ticket-editar {
+  margin-top: 6px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ticket-editar input {
+  width: 60px;
+  margin: 0;
+}
+
+/* === Modal centrado === */
+.modal {
+  position: fixed;
+  top: 0; 
+  left: 0;
+  width: 100%; 
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-contenido {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 25px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-contenido h3 {
+  margin-bottom: 15px;
+}
+
+.modal-contenido button {
+  margin: 8px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: 0.3s;
+  min-width: 100px;
+}
+
+.modal-contenido button.confirmar { background-color: #ef4444; color: white; }
+.modal-contenido button.cancelar { background-color: #6b7280; color: white; }
+
+.modal-contenido button.confirmar:hover { 
+  background-color: #dc2626; 
+  transform: translateY(-2px);
+}
+
+.modal-contenido button.cancelar:hover { 
+  background-color: #4b5563; 
+  transform: translateY(-2px);
+}
+
+/* === Total carrito === */
+.carrito-total {
+  text-align: right;
+  margin-top: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 10px 0;
+}
+
+/* === Responsive mejorado === */
+
+/* Móviles pequeños (siempre 2 columnas) */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+    margin: 15px auto;
+  }
+  
+  .productos {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .producto-card {
+    padding: 12px;
+  }
+  
+  .producto-card img {
+    height: 140px;
+  }
+  
+  .menu-superior {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .menu-superior h3 {
+    text-align: center;
+    min-width: auto;
+  }
+  
+  .menu-superior button {
+    width: 100%;
+  }
+  
+  .ticket {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ticket-acciones {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .ticket-acciones button {
+    flex: 1;
+    text-align: center;
+  }
+}
+
+/* Tablets y pantallas medianas (3-4 columnas) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .productos {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  
+  .producto-card img {
+    height: 170px;
+  }
+}
+
+/* Pantallas grandes (4+ columnas) */
+@media (min-width: 1025px) {
+  .productos {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 22px;
+  }
+  
+  .producto-card img {
+    height: 180px;
+  }
+}
+
+/* Móviles muy pequeños (ajustes adicionales) */
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+    margin: 10px auto;
+  }
+  
+  .productos {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  
+  .producto-card {
+    padding: 10px;
+  }
+  
+  .producto-card img {
+    height: 120px;
+  }
+  
+  .producto-card h4 {
+    font-size: 0.9rem;
+  }
+  
+  .ticket img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .ticket-info {
+    margin-left: 8px;
+    min-width: 100px;
+  }
+  
+  .ticket-editar {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .modal {
+    padding: 10px;
+  }
+  
+  .modal-contenido {
+    padding: 15px 20px;
+  }
+}
+
+/* Móviles extremadamente pequeños */
+@media (max-width: 360px) {
+  .productos {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .producto-card {
+    padding: 8px;
+  }
+  
+  .producto-card img {
+    height: 100px;
+  }
+  
+  .ticket-acciones {
+    flex-direction: column;
+  }
+  
+  .ticket-acciones button {
+    width: 100%;
+  }
+}
+
+/* Para pantallas muy grandes */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1100px;
+  }
+  
+  .productos {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+  }
+  
+  .producto-card img {
+    height: 190px;
+  }
+}
