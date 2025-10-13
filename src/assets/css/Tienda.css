@@ -1,147 +1,502 @@
-/* Productos modernos */
+/* === Reset y generales mínimos === */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: white; /* Cambiado a blanco */
+  margin: 0;
+  padding: 0;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* === Grid de productos === */
 .productos {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
+/* === ProductoCard === */
 .producto-card {
-  background: white;
-  border-radius: 15px;
+  background-color: white;
+  border-radius: 14px;
   padding: 15px;
-  width: 200px;
   text-align: center;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
   transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .producto-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 .producto-card img {
-  width: 150px;
-  height: 150px;
+  width: 100%;
+  height: 160px;
   object-fit: cover;
   border-radius: 12px;
   margin-bottom: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
-/* Botones añadir */
-.producto-card button.add {
-  background-color: #10b981;
-  color: white;
+.producto-card h4 {
+  margin: 5px 0;
+  font-size: 1rem;
   font-weight: 600;
+  flex-grow: 1;
+}
+
+.producto-card p {
+  margin: 5px 0 12px 0;
+  font-weight: 500;
+}
+
+.producto-card button.add {
+  background-color: #28a745;
+  color: white;
   padding: 8px 12px;
   border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
   transition: 0.3s;
+  width: 100%;
 }
 
 .producto-card button.add:hover {
-  background-color: #059669;
+  background-color: #218838;
+  transform: translateY(-2px);
 }
 
-/* Toast moderno */
+/* === Modal de imagen ampliada === */
+.imagen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.imagen-modal-contenido {
+  position: relative;
+}
+
+.imagen-modal img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+}
+
+.cerrar-imagen {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: #fff;
+  border: none;
+  font-size: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 35px;
+  height: 35px;
+  line-height: 30px;
+}
+
+/* === Responsive ProductoCard === */
+@media (max-width: 768px) {
+  .productos {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .producto-card {
+    padding: 12px;
+  }
+
+  .producto-card img {
+    height: 140px;
+  }
+}
+
+@media (max-width: 480px) {
+  .producto-card {
+    padding: 10px;
+  }
+
+  .producto-card img {
+    height: 120px;
+  }
+
+  .producto-card h4 {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .producto-card img {
+    height: 100px;
+  }
+}
+
+/* === Menú superior con botón de cerrar sesión === */
+.menu-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  padding: 12px 20px;
+  border-radius: 12px;
+  color: white;
+  margin-bottom: 20px;
+  gap: 10px;
+  position: sticky; /* Agregado: se queda fijo */
+  top: 10px; /* Agregado: distancia desde arriba */
+  z-index: 1000; /* Agregado: para que esté por encima */
+}
+
+.menu-superior h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.menu-superior button {
+  background-color: white;
+  color: #007bff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.menu-superior button:hover {
+  background-color: #e0e7ff;
+  transform: translateY(-2px);
+}
+
+/* === Toast producto añadido === */
 .toast-anadido {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #111;
+  background-color: #28a745;
   color: white;
   padding: 12px 20px;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 0.95rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-  animation: slideUp 0.5s ease;
   cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  z-index: 1001;
+  transition: 0.3s;
 }
 
-@keyframes slideUp {
-  0% { opacity: 0; transform: translateY(20px);}
-  100% { opacity: 1; transform: translateY(0);}
+.toast-anadido:hover {
+  background-color: #218838;
 }
 
-/* Carrito modernizado */
-.carrito-container, .ticket {
+/* === Modal de confirmación de cerrar sesión === */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1002;
+}
+
+.modal-contenido {
+  background-color: white;
+  padding: 20px 30px;
   border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 15px;
-  background: white;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-  transition: transform 0.2s;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
 }
 
-.ticket:hover {
+.modal-contenido h3 {
+  margin-bottom: 20px;
+}
+
+.modal-contenido button {
+  margin: 0 10px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.modal-contenido .confirmar {
+  background-color: #dc3545;
+  color: white;
+}
+
+.modal-contenido .confirmar:hover {
+  background-color: #c82333;
   transform: translateY(-2px);
 }
 
-/* Login animaciones */
-.login-anim {
-  animation: fadeIn 0.6s ease-in-out;
-}
-
-.input-anim {
-  transition: all 0.3s ease;
-}
-
-.input-anim:focus {
-  transform: scale(1.05);
-  border-color: #ff6f61;
-  box-shadow: 0 0 8px rgba(255, 111, 97, 0.5);
-  outline: none;
-}
-
-.btn-anim {
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.btn-anim:hover {
-  transform: scale(1.05);
-  background-color: #ff6f61;
-  color: #fff;
-}
-
-.btn-anim-outline {
-  transition: all 0.3s ease;
-  border: 2px solid #ff6f61;
-  background: transparent;
-  color: #ff6f61;
-  cursor: pointer;
-}
-
-.btn-anim-outline:hover {
-  background-color: #ff6f61;
+.modal-contenido .cancelar {
+  background-color: #6c757d;
   color: white;
+}
+
+.modal-contenido .cancelar:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+}
+
+/* Estilos para el buscador en el menú superior */
+
+/* Menu Superior */
+.menu-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  padding: 15px 0;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 20px;
+}
+
+/* Buscador */
+.buscador-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  padding: 5px 15px;
+  flex: 1;
+  max-width: 400px;
+  min-width: 250px;
+  transition: border-color 0.3s ease;
+}
+
+.buscador-menu:focus-within {
+  border-color: #007bff;
+}
+
+.input-busqueda-menu {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 8px 0;
+  font-size: 14px;
+  background: transparent;
+}
+
+.btn-buscar-menu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.btn-buscar-menu:hover:not(:disabled) {
+  background-color: #f0f0f0;
+}
+
+.btn-buscar-menu:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-limpiar-menu {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+  border-radius: 50%;
+  color: #666;
+  transition: background-color 0.3s;
+}
+
+.btn-limpiar-menu:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* Información de búsqueda - Estilo tipo card */
+.info-busqueda {
+  display: flex;
+  justify-content: flex-start;
+  margin: 15px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #007bff;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.btn-limpiar {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-limpiar:hover {
+  background: #0056b3;
   transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-/* Cards productos animación */
-.producto-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+/* Sin resultados */
+.sin-resultados {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
 }
 
-.producto-card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+.sin-resultados p {
+  margin-bottom: 15px;
+  font-size: 16px;
 }
 
-/* FadeIn general */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Animaciones */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Toast animación */
-.toast-anadido {
-  animation: slideIn 0.5s forwards;
+/* Responsive */
+@media (max-width: 768px) {
+  .menu-superior {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .menu-superior h3 {
+    order: 1;
+    margin-bottom: 0;
+  }
+  
+  .buscador-menu {
+    order: 2;
+    max-width: none;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .menu-superior button:last-child {
+    order: 4;
+  }
+  
+  .menu-superior button:nth-last-child(2) {
+    order: 3;
+  }
+  
+  /* Info búsqueda responsive */
+  .info-busqueda {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 20px 15px;
+  }
+  
+  .btn-limpiar {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 15px;
+  }
+  
+  /* Ajustes para el buscador en móvil */
+  .buscador-menu {
+    min-width: auto;
+    padding: 8px 15px;
+  }
+  
+  .input-busqueda-menu {
+    font-size: 16px; /* Mejor para móviles */
+    padding: 8px 0;
+  }
 }
 
-@keyframes slideIn {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+@media (max-width: 480px) {
+  .menu-superior {
+    padding: 10px 0;
+    gap: 10px;
+  }
+  
+  .info-busqueda {
+    margin: 10px 0;
+    padding: 15px 10px;
+  }
+  
+  .btn-limpiar {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+  
+  .sin-resultados {
+    padding: 30px 15px;
+    margin: 15px 0;
+  }
+  
+  .sin-resultados p {
+    font-size: 15px;
+  }
+}
+
+/* Mejoras para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .menu-superior {
+    gap: 12px;
+  }
+  
+  .buscador-menu {
+    max-width: 350px;
+  }
+  
+  .info-busqueda {
+    margin: 20px 0;
+  }
 }
