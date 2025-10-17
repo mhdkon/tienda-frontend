@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "./../assets/css/Index.css";
+import "../assets/css/index.css"; 
 
 function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
   const [editando, setEditando] = useState(null);
