@@ -145,7 +145,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
                 <li key={producto._id} className="carrito-item">
                   <img
                     className="carrito-img"
-                    src={`${url}${producto.imagen}`} // ✅Aquí usamos la variable de entorno correctamente
+                    src={`${url}${producto.imagen}`} // Aquí usamos la variable de entorno correctamente
                     alt={producto.nombre}
                   />
                   <div className="carrito-info">
