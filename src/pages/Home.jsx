@@ -22,6 +22,12 @@ export default function Home() {
 
   const API = import.meta.env.VITE_API_URL;
 
+  const obtenerRutaImagen = (imagen) => {
+    if (!imagen) return `${API}/fallback.jpg`;
+    if (imagen.startsWith("http")) return imagen;
+    return `${API}${imagen}`;
+  };
+
   const onLoginSuccess = (token, mensaje) => {
     setToken(token);
     setMensaje(mensaje);
@@ -57,13 +63,16 @@ export default function Home() {
 
   const handleBuscar = async () => {
     if (!terminoBusqueda.trim()) return alert("Por favor ingresa un término de búsqueda");
+
     setBuscando(true);
     try {
       const res = await fetch(
         `${API}/productos/buscar?nombre=${encodeURIComponent(terminoBusqueda)}`,
         { headers: { Authorization: "Bearer " + token } }
       );
+
       if (!res.ok) throw new Error("Error en la búsqueda");
+
       const resultados = await res.json();
       setProductosFiltrados(resultados);
       setMostrandoResultados(true);
@@ -109,19 +118,12 @@ export default function Home() {
     setMostrarModal(false);
   };
 
-  const handleClickImagen = (src) => setImagenGrande(src);
+  const handleClickImagen = (imagen) => setImagenGrande(obtenerRutaImagen(imagen));
   const cerrarImagen = () => setImagenGrande("");
 
   useEffect(() => {
     if (token) cargarProductos(token);
   }, [token]);
-
-  // Función para manejar ruta de imagen igual que en Carrito
-  const obtenerRutaImagen = (imagen) => {
-    if (!imagen) return `${API}/fallback.jpg`;
-    if (imagen.startsWith("http")) return imagen;
-    return `${API}${imagen}`;
-  };
 
   // --- Vistas ---
   if (view === "menu")
@@ -141,6 +143,7 @@ export default function Home() {
       <div className="container">
         <div className="menu-superior">
           <h3>{mensaje}</h3>
+
           <div className="buscador-menu">
             <input
               type="text"
@@ -188,24 +191,12 @@ export default function Home() {
         {productosFiltrados.length > 0 ? (
           <ul className="productos">
             {productosFiltrados.map((p) => (
-              <li key={p._id} className="producto-card">
-                <img
-                  src={obtenerRutaImagen(p.imagen)}
-                  alt={p.nombre}
-                  onClick={() => handleClickImagen(obtenerRutaImagen(p.imagen))}
-                  style={{ cursor: "pointer" }}
-                />
-                <h4>{p.nombre}</h4>
-                <p>
-                  {p.precio.toLocaleString("es-ES", {
-                    style: "currency",
-                    currency: "EUR",
-                  })}
-                </p>
-                <button className="add" onClick={() => handleAñadirCarrito(p)}>
-                  Añadir al carrito
-                </button>
-              </li>
+              <ProductoCard
+                key={p._id}
+                producto={{ ...p, imagen: obtenerRutaImagen(p.imagen) }}
+                onAñadir={handleAñadirCarrito}
+                onClickImagen={handleClickImagen}
+              />
             ))}
           </ul>
         ) : (

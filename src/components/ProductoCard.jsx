@@ -2,9 +2,9 @@ import { useState } from "react";
 
 export default function ProductoCard({ producto, onAñadir, onClickImagen }) {
   const [mostrarImagen, setMostrarImagen] = useState(false);
+
   const API = import.meta.env.VITE_API_URL;
 
-  // Función para obtener ruta correcta de la imagen
   const obtenerRutaImagen = (imagen) => {
     if (!imagen) return `${API}/fallback.jpg`;
     if (imagen.startsWith("http")) return imagen;
@@ -21,14 +21,14 @@ export default function ProductoCard({ producto, onAñadir, onClickImagen }) {
           alt={producto.nombre}
           onClick={() => {
             setMostrarImagen(true);
-            onClickImagen && onClickImagen(imagenSrc);
+            onClickImagen && onClickImagen(producto.imagen);
           }}
           onError={(e) => (e.target.src = `${API}/fallback.jpg`)}
           style={{ cursor: "pointer" }}
         />
         <h4>{producto.nombre}</h4>
         <p>
-          {(producto.precio || 0).toLocaleString("es-ES", {
+          {producto.precio.toLocaleString("es-ES", {
             style: "currency",
             currency: "EUR",
           })}

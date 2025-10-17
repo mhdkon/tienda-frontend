@@ -9,15 +9,9 @@ export default function BusquedaPage() {
   const [mostrandoResultados, setMostrandoResultados] = useState(false);
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
+
   const token = localStorage.getItem('token') || '';
   const API = import.meta.env.VITE_API_URL;
-
-  // Función para obtener ruta de imagen
-  const obtenerRutaImagen = (imagen) => {
-    if (!imagen) return `${API}/fallback.jpg`;
-    if (imagen.startsWith("http")) return imagen;
-    return `${API}${imagen}`;
-  };
 
   useEffect(() => {
     cargarProductos();
@@ -26,13 +20,12 @@ export default function BusquedaPage() {
   const cargarProductos = async () => {
     try {
       setCargando(true);
-      const response = await fetch(`${API}/productos`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API}/productos`, {
+        headers: { Authorization: "Bearer " + token },
       });
-      const data = await response.json();
-      const productosConRuta = data.map(p => ({ ...p, imagen: obtenerRutaImagen(p.imagen) }));
-      setProductos(productosConRuta);
-      setProductosFiltrados(productosConRuta);
+      const data = await res.json();
+      setProductos(data);
+      setProductosFiltrados(data);
     } catch (error) {
       console.error('Error cargando productos:', error);
     } finally {
@@ -41,8 +34,7 @@ export default function BusquedaPage() {
   };
 
   const manejarResultadosBusqueda = (resultados, termino) => {
-    const resultadosConRuta = resultados.map(p => ({ ...p, imagen: obtenerRutaImagen(p.imagen) }));
-    setProductosFiltrados(resultadosConRuta);
+    setProductosFiltrados(resultados);
     setMostrandoResultados(true);
     setTerminoBusqueda(termino);
   };
@@ -55,27 +47,57 @@ export default function BusquedaPage() {
 
   const manejarAñadirAlCarrito = (producto) => {
     console.log('Añadiendo al carrito:', producto);
+    // Lógica de añadir al carrito
+  };
+
+  const obtenerRutaImagen = (imagen) => {
+    if (!imagen) return `${API}/fallback.jpg`;
+    if (imagen.startsWith("http")) return imagen;
+    return `${API}${imagen}`;
   };
 
   if (cargando) return <div className="cargando">Cargando productos...</div>;
 
   return (
     <div className="busqueda-page">
-      <Buscador onResultadosBusqueda={manejarResultadosBusqueda} token={token} />
+      <div className="header-busqueda">
+        <h1>Nuestra Colección de Zapatos</h1>
+
+        <Buscador 
+          onResultadosBusqueda={manejarResultadosBusqueda}
+          token={token}
+        />
+
+        {mostrandoResultados && (
+          <div className="info-busqueda">
+            <p>
+              Mostrando {productosFiltrados.length} resultado(s) para: 
+              <strong> "{terminoBusqueda}"</strong>
+            </p>
+            <button onClick={limpiarBusqueda} className="btn-limpiar">
+              Ver todos los productos
+            </button>
+          </div>
+        )}
+      </div>
 
       <ul className="lista-productos">
         {productosFiltrados.length > 0 ? (
           productosFiltrados.map((producto) => (
             <ProductoCard
               key={producto._id}
-              producto={producto}
+              producto={{ ...producto, imagen: obtenerRutaImagen(producto.imagen) }}
               onAñadir={manejarAñadirAlCarrito}
             />
           ))
         ) : (
           <div className="sin-resultados">
-            <p>No se encontraron productos.</p>
-            {mostrandoResultados && <button onClick={limpiarBusqueda}>Ver todos los productos</button>}
+            <p>No se encontraron productos que coincidan con tu búsqueda.</p>
+            {mostrandoResultados && (
+              <button onClick={limpiarBusqueda} className="btn-limpiar">
+                Ver todos los productos
+              </button>
+            )}
           </div>
         )}
       </ul>
