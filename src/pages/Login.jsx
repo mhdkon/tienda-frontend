@@ -13,18 +13,25 @@ export default function Login({ onLoginSuccess, setView }) {
   const nombreRegex = /^[A-Z][a-z]+ [A-Z][a-z]+$/;
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 
+  const mostrarMensaje = (texto, tipo) => {
+    setMensaje(texto);
+    setTipoMensaje(tipo);
+    setTimeout(() => setMensaje(""), 5000);
+  };
+
   const handleLogin = async () => {
     const nombreTrim = nombre.trim();
     const passwordTrim = password.trim();
 
+    // Validaciones
     if (!nombreTrim || !passwordTrim) {
-      mostrarMensaje("⚠️ Completa todos los campos", "error");
+      mostrarMensaje(" Completa todos los campos", "error");
       return;
     }
 
     if (!nombreRegex.test(nombreTrim)) {
       mostrarMensaje(
-        "❌ El nombre debe tener formato 'Nombre Apellido' con mayúsculas iniciales",
+        " El nombre debe tener formato 'Nombre Apellido' con mayúsculas iniciales",
         "error"
       );
       return;
@@ -32,28 +39,23 @@ export default function Login({ onLoginSuccess, setView }) {
 
     if (!passwordRegex.test(passwordTrim)) {
       mostrarMensaje(
-        "❌ La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
+        " La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
         "error"
       );
       return;
     }
 
+    // Intento de login
     setLoading(true);
     const data = await loginUser(nombreTrim, passwordTrim);
     setLoading(false);
 
     if (data.token) {
-      mostrarMensaje("✅ " + data.mensaje, "success");
+      mostrarMensaje(" " + data.mensaje, "success");
       setTimeout(() => onLoginSuccess(data.token, data.mensaje), 500);
     } else {
       mostrarMensaje("❌ " + (data.error || "Error al iniciar sesión"), "error");
     }
-  };
-
-  const mostrarMensaje = (texto, tipo) => {
-    setMensaje(texto);
-    setTipoMensaje(tipo);
-    setTimeout(() => setMensaje(""), 5000);
   };
 
   const togglePasswordVisibility = () => {
@@ -71,7 +73,7 @@ export default function Login({ onLoginSuccess, setView }) {
           onChange={(e) => setNombre(e.target.value)}
           className="login-input-field"
         />
-        
+
         <div className="login-password-container">
           <input
             type={showPassword ? "text" : "password"}
@@ -88,14 +90,23 @@ export default function Login({ onLoginSuccess, setView }) {
             {showPassword ? "🙈" : "👁️"}
           </button>
         </div>
-        
-        <button onClick={handleLogin} className="login-submit-btn" disabled={loading}>
-          {loading ? "🔄 Iniciando sesión..." : "🚀 Iniciar Sesión"}
+
+        <button
+          onClick={handleLogin}
+          className="login-submit-btn"
+          disabled={loading}
+        >
+          {loading ? " Iniciando sesión..." : " Iniciar Sesión"}
         </button>
 
+        {mensaje && (
+          <div className={`login-message ${tipoMensaje}`}>
+            {mensaje}
+          </div>
+        )}
 
         <button onClick={() => setView("menu")} className="login-back-btn">
-          ↩️ Volver al Menú Principal
+           Volver al Menú Principal
         </button>
       </div>
     </div>

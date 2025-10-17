@@ -500,3 +500,59 @@ body {
     margin: 20px 0;
   }
 }
+
+
+/* Contenedor principal */
+.menu-inicial {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 25px;
+  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Título */
+.menu-inicial h1 {
+  font-size: 2.5rem;
+  color: #333;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  margin: 0;
+}
+
+/* Botones */
+.menu-inicial button {
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  background: linear-gradient(135deg, #ff758c, #ff7eb3);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Hover de botones */
+.menu-inicial button:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .menu-inicial h1 {
+    font-size: 2rem;
+  }
+
+  .menu-inicial button {
+    width: 80%;
+    max-width: 250px;
+  }
+}
+

@@ -126,7 +126,7 @@ export default function Home() {
   if (view === "menu")
     return (
       <div className="menu-inicial container">
-        <h1>🛍️ Bienvenido a la Tienda de Zapatos</h1>
+        <h1> Bienvenido a la Tienda de Zapatos</h1>
         <button onClick={() => setView("login")}>Iniciar sesión</button>
         <button onClick={() => setView("register")}>Registrarse</button>
       </div>
@@ -173,7 +173,7 @@ export default function Home() {
 
           <button onClick={() => setMostrarModal(true)}>🚪 Cerrar sesión</button>
           <button onClick={() => setView("carritoAñadidos")}>
-            🛒 {contadorAñadidos} productos añadidos
+             {contadorAñadidos} productos añadidos
           </button>
         </div>
 
@@ -186,7 +186,7 @@ export default function Home() {
           </div>
         )}
 
-        <h3>🛒 {mostrandoResultados ? "Resultados de búsqueda:" : "Productos de la tienda:"}</h3>
+        <h3> {mostrandoResultados ? "Resultados de búsqueda:" : "Productos de la tienda:"}</h3>
         
         {productosFiltrados.length > 0 ? (
           <ul className="productos">

@@ -23,13 +23,13 @@ export default function Register({ setView }) {
     const passwordTrim = password.trim();
 
     if (!nombreTrim || !passwordTrim) {
-      mostrarMensaje("⚠️ Completa todos los campos", "error");
+      mostrarMensaje(" Completa todos los campos", "error");
       return;
     }
 
     if (!nombreRegex.test(nombreTrim)) {
       mostrarMensaje(
-        "❌ El nombre debe tener formato 'Nombre Apellido' con mayúsculas iniciales",
+        " El nombre debe tener formato 'Nombre Apellido' con mayúsculas iniciales",
         "error"
       );
       return;
@@ -37,7 +37,7 @@ export default function Register({ setView }) {
 
     if (!passwordRegex.test(passwordTrim)) {
       mostrarMensaje(
-        "❌ La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
+        " La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
         "error"
       );
       return;
@@ -46,10 +46,10 @@ export default function Register({ setView }) {
     const data = await registerUser(nombreTrim, passwordTrim);
 
     if (data.mensaje) {
-      mostrarMensaje("✅ " + data.mensaje, "success");
+      mostrarMensaje(" " + data.mensaje, "success");
       setTimeout(() => setView("login"), 1000);
     } else {
-      mostrarMensaje("❌ " + (data.error || "Error en registro"), "error");
+      mostrarMensaje(" " + (data.error || "Error en registro"), "error");
     }
   };
 

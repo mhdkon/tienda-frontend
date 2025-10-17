@@ -1,4 +1,5 @@
-const API = "http://localhost:3000";
+
+const API = import.meta.env.VITE_API_URL; // conexion con el bakend usando la url 
 
 export const loginUser = async (nombre, password) => {
   const res = await fetch(`${API}/auth/login`, {
