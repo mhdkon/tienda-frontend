@@ -54,7 +54,7 @@ export default function Login({ onLoginSuccess, setView }) {
       mostrarMensaje(" " + data.mensaje, "success");
       setTimeout(() => onLoginSuccess(data.token, data.mensaje), 500);
     } else {
-      mostrarMensaje("❌ " + (data.error || "Error al iniciar sesión"), "error");
+      mostrarMensaje(" " + (data.error || "Error al iniciar sesión"), "error");
     }
   };
 
@@ -99,11 +99,6 @@ export default function Login({ onLoginSuccess, setView }) {
           {loading ? " Iniciando sesión..." : " Iniciar Sesión"}
         </button>
 
-        {mensaje && (
-          <div className={`login-message ${tipoMensaje}`}>
-            {mensaje}
-          </div>
-        )}
 
         <button onClick={() => setView("menu")} className="login-back-btn">
            Volver al Menú Principal

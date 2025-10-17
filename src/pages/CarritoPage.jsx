@@ -4,7 +4,8 @@ import "../assets/css/index.css";
 function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
   const [editando, setEditando] = useState(null);
   const [productoNuevo, setProductoNuevo] = useState("");
-  const url = "http://localhost:3000";
+  const url = import.meta.env.VITE_API_URL;
+
 
   // Cargar el carrito al abrir la página
   useEffect(() => {
@@ -159,7 +160,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
                 <li key={producto._id} className="carrito-item">
                   <img
                     className="carrito-img"
-                    src={`http://localhost:3000${producto.imagen}`}
+                    src={`import.meta.env.VITE_API_URL${producto.imagen}`}
                     alt={producto.nombre}
                   />
                   <div className="carrito-info">
