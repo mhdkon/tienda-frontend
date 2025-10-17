@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function Carrito({
   carrito,
   productos,
@@ -10,9 +12,17 @@ export default function Carrito({
   nuevoProducto,
   setNuevoProducto,
 }) {
+  const API = import.meta.env.VITE_API_URL;
+
   // Garantizar que carrito y productos siempre sean arrays
   const carritoArray = Array.isArray(carrito) ? carrito : [];
   const productosArray = Array.isArray(productos) ? productos : [];
+
+  const obtenerRutaImagen = (imagen) => {
+    if (!imagen) return "/fallback.jpg";
+    if (imagen.startsWith("http")) return imagen;
+    return `${API}${imagen}`;
+  };
 
   return (
     <ul className="carrito-lista-tickets">
@@ -21,7 +31,7 @@ export default function Carrito({
       ) : (
         carritoArray.map((p) => (
           <li key={p._id} className="ticket">
-            <img src={`http://localhost:3000${p.imagen}`} alt={p.nombre} />
+            <img src={obtenerRutaImagen(p.imagen)} alt={p.nombre} />
             <div className="ticket-info">
               <h4>{p.nombre}</h4>
               <p>
@@ -35,9 +45,7 @@ export default function Carrito({
               </span>
             </div>
             <div className="ticket-acciones">
-              {!p.pagado && (
-                <button onClick={() => handlePagar(p._id)}>Pagar</button>
-              )}
+              {!p.pagado && <button onClick={() => handlePagar(p._id)}>Pagar</button>}
               <button onClick={() => handleBorrar(p._id)}>Borrar</button>
               <button onClick={() => setEditarId(p._id)}>Editar</button>
             </div>

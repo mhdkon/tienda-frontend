@@ -3,11 +3,14 @@ import { useState } from "react";
 export default function ProductoCard({ producto, onAñadir }) {
   const [mostrarImagen, setMostrarImagen] = useState(false);
 
-  // Ruta correcta de imagen
+  // Conecta con la URL del backend según la variable de entorno
+  const API = import.meta.env.VITE_API_URL;
+
+  // Obtener la ruta correcta de la imagen
   const obtenerRutaImagen = (imagen) => {
-    if (!imagen) return "/fallback.jpg";
-    if (imagen.startsWith("http")) return imagen;
-    return `http://localhost:3000${imagen}`;
+    if (!imagen) return "/fallback.jpg"; // imagen por defecto
+    if (imagen.startsWith("http")) return imagen; // URL absoluta
+    return `${API}${imagen}`; // URL relativa al backend
   };
 
   const imagenSrc = obtenerRutaImagen(producto.imagen);

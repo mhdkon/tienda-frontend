@@ -7,13 +7,12 @@ export default function BusquedaPage() {
   const [productos, setProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [mostrandoResultados, setMostrandoResultados] = useState(false);
-  const [terminoBusqueda, setTerminoBusqueda] = useState('');
+  const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
 
-  // Obtener token (ajusta según tu implementación)
-  const token = localStorage.getItem('token') || '';
+  const token = localStorage.getItem("token") || "";
+  const API_URL = import.meta.env.VITE_API_URL; // Variable de entorno
 
-  // Cargar todos los productos inicialmente
   useEffect(() => {
     cargarProductos();
   }, []);
@@ -21,13 +20,14 @@ export default function BusquedaPage() {
   const cargarProductos = async () => {
     try {
       setCargando(true);
-      // Aquí tu función para cargar todos los productos
-      const response = await fetch('http://localhost:3000/api/productos');
-      const data = await response.json();
+      const res = await fetch(`${API_URL}/productos`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
       setProductos(data);
       setProductosFiltrados(data);
     } catch (error) {
-      console.error('Error cargando productos:', error);
+      console.error("Error cargando productos:", error);
     } finally {
       setCargando(false);
     }
@@ -42,34 +42,27 @@ export default function BusquedaPage() {
   const limpiarBusqueda = () => {
     setProductosFiltrados(productos);
     setMostrandoResultados(false);
-    setTerminoBusqueda('');
+    setTerminoBusqueda("");
   };
 
   const manejarAñadirAlCarrito = (producto) => {
-    // Tu lógica existente para añadir al carrito
-    console.log('Añadiendo al carrito:', producto);
-    // ... tu código existente
+    console.log("Añadiendo al carrito:", producto);
+    // Aquí puedes llamar a tu función de añadir al carrito usando API_URL
   };
 
-  if (cargando) {
-    return <div className="cargando">Cargando productos...</div>;
-  }
+  if (cargando) return <div className="cargando">Cargando productos...</div>;
 
   return (
     <div className="busqueda-page">
       <div className="header-busqueda">
         <h1>Nuestra Colección de Zapatos</h1>
-        
-        <Buscador 
-          onResultadosBusqueda={manejarResultadosBusqueda}
-          token={token}
-        />
+        <Buscador onResultadosBusqueda={manejarResultadosBusqueda} token={token} />
 
         {mostrandoResultados && (
           <div className="info-busqueda">
             <p>
-              Mostrando {productosFiltrados.length} resultado(s) para: 
-              <strong> "{terminoBusqueda}"</strong>
+              Mostrando {productosFiltrados.length} resultado(s) para:{" "}
+              <strong>"{terminoBusqueda}"</strong>
             </p>
             <button onClick={limpiarBusqueda} className="btn-limpiar">
               Ver todos los productos
