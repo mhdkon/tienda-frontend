@@ -4,16 +4,12 @@ import "../assets/css/index.css";
 function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
   const [editando, setEditando] = useState(null);
   const [productoNuevo, setProductoNuevo] = useState("");
-  const url = import.meta.env.VITE_API_URL;
-
+  const url = import.meta.env.VITE_API_URL; // Variable de entorno
 
   // Cargar el carrito al abrir la página
   useEffect(() => {
-    if (token) {
-      obtenerCarrito();
-    } else {
-      setCarrito([]);
-    }
+    if (token) obtenerCarrito();
+    else setCarrito([]);
   }, []);
 
   const obtenerCarrito = async () => {
@@ -30,7 +26,6 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
     }
   };
 
-  // Cambiar cantidad localmente
   const cambiarCantidad = (idProducto, nuevaCantidad) => {
     setCarrito((prev) =>
       prev.map((p) =>
@@ -39,49 +34,40 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
     );
   };
 
-  const aumentarCantidad = (idProducto, cantidadAhora) => {
+  const aumentarCantidad = (idProducto, cantidadAhora) =>
     cambiarCantidad(idProducto, cantidadAhora + 1);
-  };
 
   const disminuirCantidad = (idProducto, cantidadAhora) => {
-    if (cantidadAhora > 1) {
-      cambiarCantidad(idProducto, cantidadAhora - 1);
-    }
+    if (cantidadAhora > 1) cambiarCantidad(idProducto, cantidadAhora - 1);
   };
 
-  // Quitar producto
   const quitarProducto = async (id) => {
     try {
       const respuesta = await fetch(`${url}/carrito/${id}`, {
         method: "DELETE",
         headers: { Authorization: "Bearer " + token },
       });
-      if (respuesta.ok) {
-        setCarrito((prev) => prev.filter((p) => p._id !== id));
-      }
+      if (respuesta.ok) setCarrito((prev) => prev.filter((p) => p._id !== id));
     } catch (error) {
       console.log("Error al borrar producto:", error);
     }
   };
 
-  // Pagar un producto
   const pagarProducto = async (id) => {
     try {
       const respuesta = await fetch(`${url}/carrito/pagar/${id}`, {
         method: "PUT",
         headers: { Authorization: "Bearer " + token },
       });
-      if (respuesta.ok) {
+      if (respuesta.ok)
         setCarrito((prev) =>
           prev.map((p) => (p._id === id ? { ...p, pagado: true } : p))
         );
-      }
     } catch (error) {
       console.log("Error al pagar producto:", error);
     }
   };
 
-  // Pagar todo
   const pagarTodo = async () => {
     try {
       for (const producto of carrito || []) {
@@ -100,7 +86,6 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
     }
   };
 
-  // Cambiar producto
   const cambiarProducto = async (id) => {
     if (!productoNuevo) return;
     try {
@@ -160,7 +145,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
                 <li key={producto._id} className="carrito-item">
                   <img
                     className="carrito-img"
-                    src={`import.meta.env.VITE_API_URL${producto.imagen}`}
+                    src={`${url}${producto.imagen}`} // ✅Aquí usamos la variable de entorno correctamente
                     alt={producto.nombre}
                   />
                   <div className="carrito-info">
