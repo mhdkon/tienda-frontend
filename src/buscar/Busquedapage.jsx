@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ProductoCard from "../components/ProductoCard"; // Ajusta la ruta según tu estructura
+import ProductoCard from "../components/ProductoCard";
 import Buscador from "./Buscador";
 import "./busqueda.css";
 
@@ -7,11 +7,17 @@ export default function BusquedaPage() {
   const [productos, setProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [mostrandoResultados, setMostrandoResultados] = useState(false);
-  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+  const [terminoBusqueda, setTerminoBusqueda] = useState('');
   const [cargando, setCargando] = useState(true);
+  const token = localStorage.getItem('token') || '';
+  const API = import.meta.env.VITE_API_URL;
 
-  const token = localStorage.getItem("token") || "";
-  const API_URL = import.meta.env.VITE_API_URL; // Variable de entorno
+  // Función para obtener ruta de imagen
+  const obtenerRutaImagen = (imagen) => {
+    if (!imagen) return `${API}/fallback.jpg`;
+    if (imagen.startsWith("http")) return imagen;
+    return `${API}${imagen}`;
+  };
 
   useEffect(() => {
     cargarProductos();
@@ -20,21 +26,23 @@ export default function BusquedaPage() {
   const cargarProductos = async () => {
     try {
       setCargando(true);
-      const res = await fetch(`${API_URL}/productos`, {
+      const response = await fetch(`${API}/productos`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      setProductos(data);
-      setProductosFiltrados(data);
+      const data = await response.json();
+      const productosConRuta = data.map(p => ({ ...p, imagen: obtenerRutaImagen(p.imagen) }));
+      setProductos(productosConRuta);
+      setProductosFiltrados(productosConRuta);
     } catch (error) {
-      console.error("Error cargando productos:", error);
+      console.error('Error cargando productos:', error);
     } finally {
       setCargando(false);
     }
   };
 
   const manejarResultadosBusqueda = (resultados, termino) => {
-    setProductosFiltrados(resultados);
+    const resultadosConRuta = resultados.map(p => ({ ...p, imagen: obtenerRutaImagen(p.imagen) }));
+    setProductosFiltrados(resultadosConRuta);
     setMostrandoResultados(true);
     setTerminoBusqueda(termino);
   };
@@ -42,34 +50,18 @@ export default function BusquedaPage() {
   const limpiarBusqueda = () => {
     setProductosFiltrados(productos);
     setMostrandoResultados(false);
-    setTerminoBusqueda("");
+    setTerminoBusqueda('');
   };
 
   const manejarAñadirAlCarrito = (producto) => {
-    console.log("Añadiendo al carrito:", producto);
-    // Aquí puedes llamar a tu función de añadir al carrito usando API_URL
+    console.log('Añadiendo al carrito:', producto);
   };
 
   if (cargando) return <div className="cargando">Cargando productos...</div>;
 
   return (
     <div className="busqueda-page">
-      <div className="header-busqueda">
-        <h1>Nuestra Colección de Zapatos</h1>
-        <Buscador onResultadosBusqueda={manejarResultadosBusqueda} token={token} />
-
-        {mostrandoResultados && (
-          <div className="info-busqueda">
-            <p>
-              Mostrando {productosFiltrados.length} resultado(s) para:{" "}
-              <strong>"{terminoBusqueda}"</strong>
-            </p>
-            <button onClick={limpiarBusqueda} className="btn-limpiar">
-              Ver todos los productos
-            </button>
-          </div>
-        )}
-      </div>
+      <Buscador onResultadosBusqueda={manejarResultadosBusqueda} token={token} />
 
       <ul className="lista-productos">
         {productosFiltrados.length > 0 ? (
@@ -82,12 +74,8 @@ export default function BusquedaPage() {
           ))
         ) : (
           <div className="sin-resultados">
-            <p>No se encontraron productos que coincidan con tu búsqueda.</p>
-            {mostrandoResultados && (
-              <button onClick={limpiarBusqueda} className="btn-limpiar">
-                Ver todos los productos
-              </button>
-            )}
+            <p>No se encontraron productos.</p>
+            {mostrandoResultados && <button onClick={limpiarBusqueda}>Ver todos los productos</button>}
           </div>
         )}
       </ul>

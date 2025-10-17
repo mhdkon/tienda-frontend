@@ -1,15 +1,14 @@
 import { useState } from "react";
 
-export default function ProductoCard({ producto, onAñadir }) {
+export default function ProductoCard({ producto, onAñadir, onClickImagen }) {
   const [mostrarImagen, setMostrarImagen] = useState(false);
+  const API = import.meta.env.VITE_API_URL;
 
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  // Ruta correcta de imagen, fallback incluido
+  // Función para obtener ruta correcta de la imagen
   const obtenerRutaImagen = (imagen) => {
-    if (!imagen) return `${API_URL}/fallback.jpg`;
+    if (!imagen) return `${API}/fallback.jpg`;
     if (imagen.startsWith("http")) return imagen;
-    return `${API_URL}${imagen}`;
+    return `${API}${imagen}`;
   };
 
   const imagenSrc = obtenerRutaImagen(producto.imagen);
@@ -20,13 +19,16 @@ export default function ProductoCard({ producto, onAñadir }) {
         <img
           src={imagenSrc}
           alt={producto.nombre}
-          onClick={() => setMostrarImagen(true)}
-          onError={(e) => (e.target.src = `${API_URL}/fallback.jpg`)}
+          onClick={() => {
+            setMostrarImagen(true);
+            onClickImagen && onClickImagen(imagenSrc);
+          }}
+          onError={(e) => (e.target.src = `${API}/fallback.jpg`)}
           style={{ cursor: "pointer" }}
         />
         <h4>{producto.nombre}</h4>
         <p>
-          {producto.precio.toLocaleString("es-ES", {
+          {(producto.precio || 0).toLocaleString("es-ES", {
             style: "currency",
             currency: "EUR",
           })}
