@@ -13,7 +13,6 @@ export default function Home() {
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [carrito, setCarrito] = useState([]);
   const [contadorAñadidos, setContadorAñadidos] = useState(0);
-  const [mostrarToast, setMostrarToast] = useState(false);
   const [mostrarModal, setMostrarModal] = useState(false);
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const [buscando, setBuscando] = useState(false);
@@ -56,38 +55,12 @@ export default function Home() {
       });
       const data = await res.json();
       setCarrito(data);
+      // Contador solo refleja productos sin pagar
+      const noPagados = data.filter((p) => !p.pagado).length;
+      setContadorAñadidos(noPagados);
     } catch (error) {
       console.error("Error al cargar carrito:", error);
     }
-  };
-
-  const handleBuscar = async () => {
-    if (!terminoBusqueda.trim()) return alert("Por favor ingresa un término de búsqueda");
-
-    setBuscando(true);
-    try {
-      const res = await fetch(
-        `${API}/productos/buscar?nombre=${encodeURIComponent(terminoBusqueda)}`,
-        { headers: { Authorization: "Bearer " + token } }
-      );
-
-      if (!res.ok) throw new Error("Error en la búsqueda");
-
-      const resultados = await res.json();
-      setProductosFiltrados(resultados);
-      setMostrandoResultados(true);
-    } catch (error) {
-      console.error(error);
-      alert("Error al buscar productos");
-    } finally {
-      setBuscando(false);
-    }
-  };
-
-  const limpiarBusqueda = () => {
-    setTerminoBusqueda("");
-    setProductosFiltrados(productos);
-    setMostrandoResultados(false);
   };
 
   const handleAñadirCarrito = async (p) => {
@@ -97,12 +70,13 @@ export default function Home() {
         headers: { Authorization: "Bearer " + token },
       });
       cargarCarrito(token);
-      setContadorAñadidos((prev) => prev + 1);
-      setMostrarToast(true);
-      setTimeout(() => setMostrarToast(false), 3000);
     } catch (error) {
       console.error("Error al añadir al carrito:", error);
     }
+  };
+
+  const handleCompraRealizada = () => {
+    setContadorAñadidos(0);
   };
 
   const handleLogoutConfirmado = () => {
@@ -121,6 +95,33 @@ export default function Home() {
   const handleClickImagen = (imagen) => setImagenGrande(obtenerRutaImagen(imagen));
   const cerrarImagen = () => setImagenGrande("");
 
+  const handleBuscar = async () => {
+    if (!terminoBusqueda.trim()) return alert("Por favor ingresa un término de búsqueda");
+    setBuscando(true);
+    try {
+      const res = await fetch(
+        `${API}/productos/buscar?nombre=${encodeURIComponent(terminoBusqueda)}`,
+        { headers: { Authorization: "Bearer " + token } }
+      );
+      if (!res.ok) throw new Error("Error en la búsqueda");
+      const resultados = await res.json();
+      setProductosFiltrados(resultados);
+      setMostrandoResultados(true);
+    } catch (error) {
+      console.error(error);
+      alert("Error al buscar productos");
+    } finally {
+      setBuscando(false);
+    }
+  };
+
+  const limpiarBusqueda = () => {
+    setTerminoBusqueda("");
+    setProductosFiltrados(productos);
+    setMostrandoResultados(false);
+    setBuscando(false);
+  };
+
   useEffect(() => {
     if (token) cargarProductos(token);
   }, [token]);
@@ -129,7 +130,7 @@ export default function Home() {
   if (view === "menu")
     return (
       <div className="menu-inicial container">
-        <h1>Bienvenido a la Tienda de Zapatos</h1>
+        <h1>Bienvenido a la Tienda de MK</h1>
         <button onClick={() => setView("login")}>Iniciar sesión</button>
         <button onClick={() => setView("register")}>Registrarse</button>
       </div>
@@ -174,7 +175,9 @@ export default function Home() {
 
           <button onClick={() => setMostrarModal(true)}>🚪 Cerrar sesión</button>
           <button onClick={() => setView("carritoAñadidos")}>
-            {contadorAñadidos} productos añadidos
+            {contadorAñadidos > 0
+              ? `${contadorAñadidos} producto${contadorAñadidos !== 1 ? "s" : ""} añadido${contadorAñadidos !== 1 ? "s" : ""}`
+              : "Producto añadido"}
           </button>
         </div>
 
@@ -214,12 +217,6 @@ export default function Home() {
           </div>
         )}
 
-        {mostrarToast && (
-          <div className="toast-anadido" onClick={() => setView("carritoAñadidos")}>
-            ✅ Producto añadido – Ver carrito
-          </div>
-        )}
-
         {mostrarModal && (
           <div className="modal">
             <div className="modal-contenido">
@@ -255,6 +252,7 @@ export default function Home() {
         productos={productos}
         setCarrito={setCarrito}
         setView={setView}
+        onCompraRealizada={handleCompraRealizada}
       />
     );
 }

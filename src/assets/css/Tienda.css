@@ -455,7 +455,7 @@ body {
   }
   
   .input-busqueda-menu {
-    font-size: 16px; /* Mejor para móviles */
+    font-size: 16px;
     padding: 8px 0;
   }
 }
@@ -501,8 +501,7 @@ body {
   }
 }
 
-
-/* Contenedor principal */
+/* === Fondo para el menú inicial - NUEVA IMAGEN === */
 .menu-inicial {
   min-height: 100vh;
   display: flex;
@@ -510,18 +509,49 @@ body {
   justify-content: center;
   align-items: center;
   gap: 25px;
-  background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
   padding: 20px;
+  
+  /* NUEVA IMAGEN - Zapatos urbanos */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.75)), 
+                    url('https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1925&q=80');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  
+  /* Ocupar toda la pantalla */
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Asegurar que cubra toda el área */
+.menu-inicial::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  z-index: -1;
 }
 
 /* Título */
 .menu-inicial h1 {
   font-size: 2.5rem;
-  color: #333;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+  color: #2c3e50;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
   margin: 0;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 15px 30px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 1;
 }
 
 /* Botones */
@@ -534,25 +564,39 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   color: white;
-  background: linear-gradient(135deg, #ff758c, #ff7eb3);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 1;
 }
 
-/* Hover de botones */
 .menu-inicial button:hover {
   transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  background: linear-gradient(135deg, #0056b3, #004494);
 }
 
-/* Responsive */
+/* Responsive para el menú inicial */
 @media (max-width: 768px) {
   .menu-inicial h1 {
     font-size: 2rem;
+    padding: 12px 20px;
   }
 
   .menu-inicial button {
     width: 80%;
     max-width: 250px;
   }
+  
+  .menu-inicial {
+    background-attachment: scroll;
+  }
 }
 
+@media (max-width: 480px) {
+  .menu-inicial h1 {
+    font-size: 1.8rem;
+    padding: 10px 15px;
+  }
+}

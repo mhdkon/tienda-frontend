@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
-import "../assets/css/index.css"; 
+import "../assets/css/index.css";
 
-function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
+function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraRealizada }) {
   const [editando, setEditando] = useState(null);
-  const [productoNuevo, setProductoNuevo] = useState("");
-  const url = import.meta.env.VITE_API_URL; // Variable de entorno
+  const [tallaNueva, setTallaNueva] = useState("");
+  const [mensajeCompra, setMensajeCompra] = useState("");
+  const url = import.meta.env.VITE_API_URL;
 
-  // Cargar el carrito al abrir la página
+  // Tallas disponibles para zapatos
+  const tallasDisponibles = ["35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
+
   useEffect(() => {
     if (token) obtenerCarrito();
     else setCarrito([]);
@@ -26,26 +29,34 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
     }
   };
 
-  const cambiarCantidad = (idProducto, nuevaCantidad) => {
-    setCarrito((prev) =>
-      prev.map((p) =>
-        p._id === idProducto ? { ...p, cantidad: nuevaCantidad } : p
-      )
-    );
+  const cambiarCantidad = async (idProducto, nuevaCantidad) => {
+    if (nuevaCantidad < 1) return;
+    try {
+      const respuesta = await fetch(`${url}/carrito/cantidad/${idProducto}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ cantidad: nuevaCantidad }),
+      });
+      if (respuesta.ok) {
+        const carritoActualizado = await respuesta.json();
+        setCarrito(carritoActualizado);
+      }
+    } catch (error) {
+      console.error("Error al actualizar cantidad:", error);
+    }
   };
 
-  const aumentarCantidad = (idProducto, cantidadAhora) =>
-    cambiarCantidad(idProducto, cantidadAhora + 1);
-
-  const disminuirCantidad = (idProducto, cantidadAhora) => {
-    if (cantidadAhora > 1) cambiarCantidad(idProducto, cantidadAhora - 1);
+  const aumentarCantidad = (id, cantidadAhora) => cambiarCantidad(id, cantidadAhora + 1);
+  
+  const disminuirCantidad = (id, cantidadAhora) => { 
+    if (cantidadAhora > 1) cambiarCantidad(id, cantidadAhora - 1); 
   };
 
   const quitarProducto = async (id) => {
     try {
-      const respuesta = await fetch(`${url}/carrito/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: "Bearer " + token },
+      const respuesta = await fetch(`${url}/carrito/${id}`, { 
+        method: "DELETE", 
+        headers: { Authorization: "Bearer " + token } 
       });
       if (respuesta.ok) setCarrito((prev) => prev.filter((p) => p._id !== id));
     } catch (error) {
@@ -55,14 +66,13 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
 
   const pagarProducto = async (id) => {
     try {
-      const respuesta = await fetch(`${url}/carrito/pagar/${id}`, {
-        method: "PUT",
-        headers: { Authorization: "Bearer " + token },
+      const respuesta = await fetch(`${url}/carrito/pagar/${id}`, { 
+        method: "PUT", 
+        headers: { Authorization: "Bearer " + token } 
       });
-      if (respuesta.ok)
-        setCarrito((prev) =>
-          prev.map((p) => (p._id === id ? { ...p, pagado: true } : p))
-        );
+      if (respuesta.ok) {
+        setCarrito((prev) => prev.map((p) => (p._id === id ? { ...p, pagado: true } : p)));
+      }
     } catch (error) {
       console.log("Error al pagar producto:", error);
     }
@@ -70,58 +80,73 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
 
   const pagarTodo = async () => {
     try {
-      for (const producto of carrito || []) {
-        if (!producto.pagado) {
-          await fetch(`${url}/carrito/pagar/${producto._id}`, {
-            method: "PUT",
-            headers: { Authorization: "Bearer " + token },
-          });
+      const respuesta = await fetch(`${url}/carrito/pagar-todo`, {
+        method: "PUT",
+        headers: { Authorization: "Bearer " + token },
+      });
+
+      if (respuesta.ok) {
+        const data = await respuesta.json();
+        setCarrito([]);
+        // Mensaje sin emojis
+        setMensajeCompra("Muchas gracias por tu compra");
+        
+        if (typeof onCompraRealizada === "function") {
+          onCompraRealizada();
         }
+        
+        setTimeout(() => setMensajeCompra(""), 5000);
       }
-      setCarrito((prev) =>
-        prev.map((p) => (!p.pagado ? { ...p, pagado: true } : p))
-      );
     } catch (error) {
       console.log("Error al pagar todo:", error);
     }
   };
 
-  const cambiarProducto = async (id) => {
-    if (!productoNuevo) return;
+  const cambiarTalla = async (id) => {
+    if (!tallaNueva) return;
+
     try {
       const respuesta = await fetch(`${url}/carrito/editar/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: "Bearer " + token 
         },
-        body: JSON.stringify({ nuevoProductoId: productoNuevo }),
+        body: JSON.stringify({ talla: tallaNueva }),
       });
 
-      if (respuesta.ok) {
-        const nuevoProd = productos.find((p) => p._id === productoNuevo);
-        if (nuevoProd) {
-          setCarrito((prev) =>
-            prev.map((p) =>
-              p._id === id
-                ? { ...nuevoProd, cantidad: p.cantidad || 1, pagado: false }
-                : p
-            )
-          );
-        }
-        setEditando(null);
-        setProductoNuevo("");
+      if (!respuesta.ok) {
+        const errorData = await respuesta.json();
+        throw new Error(errorData.error || "Error al cambiar talla");
       }
+
+      // Actualizar el carrito localmente con la nueva talla
+      setCarrito((prev) =>
+        prev.map((p) =>
+          p._id === id ? { ...p, talla: tallaNueva } : p
+        )
+      );
+      setEditando(null);
+      setTallaNueva("");
+      
     } catch (error) {
-      console.log("Error al cambiar producto:", error);
+      console.log("Error al cambiar talla:", error);
+      alert("Error: " + error.message);
     }
   };
 
+  const iniciarEdicionTalla = (producto) => {
+    setEditando(producto._id);
+    setTallaNueva(producto.talla || "");
+  };
+
+  const cancelarEdicion = () => {
+    setEditando(null);
+    setTallaNueva("");
+  };
+
   const totalPagar = (carrito || []).reduce((total, producto) => {
-    if (!producto.pagado) {
-      const cantidad = producto.cantidad || 1;
-      return total + (producto.precio || 0) * cantidad;
-    }
+    if (!producto.pagado) return total + (producto.precio || 0) * (producto.cantidad || 1);
     return total;
   }, 0);
 
@@ -134,6 +159,8 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
         </button>
       </div>
 
+      {mensajeCompra && <div className="mensaje-compra">{mensajeCompra}</div>}
+
       {(carrito || []).length === 0 ? (
         <p className="carrito-vacio">No hay productos en el carrito</p>
       ) : (
@@ -141,48 +168,47 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
           <ul className="carrito-lista">
             {(carrito || []).map((producto) => {
               const cantidad = producto.cantidad || 1;
+              const tallaActual = producto.talla || "No especificada";
+              
               return (
                 <li key={producto._id} className="carrito-item">
-                  <img
-                    className="carrito-img"
-                    src={`${url}${producto.imagen}`} // Aquí usamos la variable de entorno correctamente
-                    alt={producto.nombre}
+                  <img 
+                    className="carrito-img" 
+                    src={producto.imagen?.startsWith("http") ? producto.imagen : `${url}${producto.imagen}`} 
+                    alt={producto.nombre} 
                   />
                   <div className="carrito-info">
                     <h4 className="carrito-nombre">{producto.nombre}</h4>
                     <p className="carrito-precio">
-                      {(producto.precio || 0).toLocaleString("es-ES", {
-                        style: "currency",
-                        currency: "EUR",
+                      {(producto.precio || 0).toLocaleString("es-ES", { 
+                        style: "currency", 
+                        currency: "EUR" 
                       })}
                     </p>
-                    <div className="carrito-cantidad-info">
-                      Cantidad: {cantidad}
+                    <div className="carrito-detalles">
+                      <div className="carrito-cantidad-info">Cantidad: {cantidad}</div>
+                      <div className="carrito-talla-info">
+                        Talla: <strong>{tallaActual}</strong>
+                      </div>
                     </div>
-                    <span
-                      className={
-                        producto.pagado
-                          ? "carrito-estado pagado"
-                          : "carrito-estado no-pagado"
-                      }
-                    >
+                    <span className={producto.pagado ? "carrito-estado pagado" : "carrito-estado no-pagado"}>
                       {producto.pagado ? "Pagado" : "No pagado"}
                     </span>
                   </div>
 
                   <div className="carrito-acciones">
                     <div className="controles-cantidad">
-                      <button
-                        className="btn-restar"
-                        onClick={() => disminuirCantidad(producto._id, cantidad)}
+                      <button 
+                        className="btn-restar" 
+                        onClick={() => disminuirCantidad(producto._id, cantidad)} 
                         disabled={producto.pagado}
                       >
                         -
                       </button>
                       <span className="cantidad-numero">{cantidad}</span>
-                      <button
-                        className="btn-sumar"
-                        onClick={() => aumentarCantidad(producto._id, cantidad)}
+                      <button 
+                        className="btn-sumar" 
+                        onClick={() => aumentarCantidad(producto._id, cantidad)} 
                         disabled={producto.pagado}
                       >
                         +
@@ -190,53 +216,60 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
                     </div>
 
                     {!producto.pagado && (
-                      <button
-                        className="carrito-btn-pagar"
+                      <button 
+                        className="carrito-btn-pagar" 
                         onClick={() => pagarProducto(producto._id)}
                       >
                         Pagar
                       </button>
                     )}
-                    <button
-                      className="carrito-btn-borrar"
+                    <button 
+                      className="carrito-btn-borrar" 
                       onClick={() => quitarProducto(producto._id)}
                     >
                       Borrar
                     </button>
-                    <button
-                      className="carrito-btn-editar"
-                      onClick={() => setEditando(producto._id)}
+                    <button 
+                      className="carrito-btn-editar" 
+                      onClick={() => iniciarEdicionTalla(producto)}
+                      disabled={producto.pagado}
                     >
-                      Editar
+                      Cambiar Talla
                     </button>
                   </div>
 
                   {editando === producto._id && (
                     <div className="carrito-editar">
-                      <select
-                        className="carrito-select"
-                        value={productoNuevo}
-                        onChange={(e) => setProductoNuevo(e.target.value)}
-                      >
-                        <option value="">Elegir producto</option>
-                        {(productos || []).map((prod) => (
-                          <option key={prod._id} value={prod._id}>
-                            {prod.nombre}
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        className="carrito-btn-guardar"
-                        onClick={() => cambiarProducto(producto._id)}
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        className="carrito-btn-cancelar"
-                        onClick={() => setEditando(null)}
-                      >
-                        Cancelar
-                      </button>
+                      <h4>Cambiar talla para: {producto.nombre}</h4>
+                      <div className="talla-seleccion">
+                        <select 
+                          className="carrito-select" 
+                          value={tallaNueva} 
+                          onChange={(e) => setTallaNueva(e.target.value)}
+                        >
+                          <option value="">Selecciona talla</option>
+                          {tallasDisponibles.map((talla) => (
+                            <option key={talla} value={talla}>
+                              Talla {talla}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="talla-acciones">
+                        <button 
+                          className="carrito-btn-guardar" 
+                          onClick={() => cambiarTalla(producto._id)}
+                          disabled={!tallaNueva}
+                        >
+                          Guardar
+                        </button>
+                        <button 
+                          className="carrito-btn-cancelar" 
+                          onClick={cancelarEdicion}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                   )}
                 </li>
@@ -246,15 +279,14 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView }) {
 
           <div className="carrito-total">
             <p className="carrito-total-texto">
-              Total a pagar:{" "}
-              {totalPagar.toLocaleString("es-ES", {
-                style: "currency",
-                currency: "EUR",
+              Total a pagar: {totalPagar.toLocaleString("es-ES", { 
+                style: "currency", 
+                currency: "EUR" 
               })}
             </p>
-            <button
-              className="carrito-btn-pagar-todo"
-              onClick={pagarTodo}
+            <button 
+              className="carrito-btn-pagar-todo" 
+              onClick={pagarTodo} 
               disabled={totalPagar === 0}
             >
               Pagar todo
