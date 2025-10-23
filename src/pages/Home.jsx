@@ -130,7 +130,7 @@ export default function Home() {
   if (view === "menu")
     return (
       <div className="menu-inicial container">
-        <h1>Bienvenido a la Tienda de MK</h1>
+        <h1>¡Bienvenido a Solex! Donde cada paso tiene flow.</h1>
         <button onClick={() => setView("login")}>Iniciar sesión</button>
         <button onClick={() => setView("register")}>Registrarse</button>
       </div>
@@ -143,6 +143,7 @@ export default function Home() {
     return (
       <div className="container">
         <div className="menu-superior">
+          <h2>Solex</h2>
           <h3>{mensaje}</h3>
 
           <div className="buscador-menu">
@@ -160,7 +161,7 @@ export default function Home() {
               className="btn-buscar-menu"
               disabled={buscando || !terminoBusqueda.trim()}
             >
-              {buscando ? "⏳" : "🔍"}
+              {buscando ? "" : ""}
             </button>
             {terminoBusqueda && (
               <button
@@ -173,7 +174,7 @@ export default function Home() {
             )}
           </div>
 
-          <button onClick={() => setMostrarModal(true)}>🚪 Cerrar sesión</button>
+          <button onClick={() => setMostrarModal(true)}> Cerrar sesión</button>
           <button onClick={() => setView("carritoAñadidos")}>
             {contadorAñadidos > 0
               ? `${contadorAñadidos} producto${contadorAñadidos !== 1 ? "s" : ""} añadido${contadorAñadidos !== 1 ? "s" : ""}`

@@ -60,7 +60,7 @@ export default function Register({ setView }) {
   return (
     <div className="register-page-container">
       <div className="register-form-box">
-        <h2 className="register-title">Registro de usuario</h2>
+        <h2 className="register-title">Únete a Solex</h2>
         
         <input
           placeholder="Nombre"
