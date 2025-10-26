@@ -4,6 +4,9 @@ import "./../assets/css/Register.css";
 
 export default function Register({ setView }) {
   const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState(""); // ✅ Nuevo campo
+  const [telefono, setTelefono] = useState(""); // ✅ Nuevo campo
+  const [direccion, setDireccion] = useState(""); // ✅ Nuevo campo
   const [password, setPassword] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
@@ -11,6 +14,7 @@ export default function Register({ setView }) {
 
   const nombreRegex = /^[A-Z][a-z]+ [A-Z][a-z]+$/;
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // ✅ Nueva validación
 
   const mostrarMensaje = (texto, tipo) => {
     setMensaje(texto);
@@ -20,10 +24,12 @@ export default function Register({ setView }) {
 
   const handleRegister = async () => {
     const nombreTrim = nombre.trim();
+    const emailTrim = email.trim(); // ✅ Nuevo
     const passwordTrim = password.trim();
 
-    if (!nombreTrim || !passwordTrim) {
-      mostrarMensaje(" Completa todos los campos", "error");
+    // ✅ Validaciones actualizadas
+    if (!nombreTrim || !emailTrim || !passwordTrim) { // ✅ Agregado email
+      mostrarMensaje(" Completa todos los campos obligatorios", "error");
       return;
     }
 
@@ -35,6 +41,12 @@ export default function Register({ setView }) {
       return;
     }
 
+    // ✅ Validación de email
+    if (!emailRegex.test(emailTrim)) {
+      mostrarMensaje(" Formato de email inválido", "error");
+      return;
+    }
+
     if (!passwordRegex.test(passwordTrim)) {
       mostrarMensaje(
         " La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
@@ -43,7 +55,14 @@ export default function Register({ setView }) {
       return;
     }
 
-    const data = await registerUser(nombreTrim, passwordTrim);
+    // ✅ Llamada actualizada con nuevos campos
+    const data = await registerUser(
+      nombreTrim, 
+      emailTrim, // ✅ Nuevo
+      telefono,   // ✅ Nuevo
+      direccion,  // ✅ Nuevo
+      passwordTrim
+    );
 
     if (data.mensaje) {
       mostrarMensaje(" " + data.mensaje, "success");
@@ -63,9 +82,32 @@ export default function Register({ setView }) {
         <h2 className="register-title">Únete a Solex</h2>
         
         <input
-          placeholder="Nombre"
+          placeholder="Nombre Completo"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
+          className="register-input-field"
+        />
+
+        {/* ✅ Nuevos campos agregados */}
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="register-input-field"
+        />
+
+        <input
+          placeholder="Teléfono (opcional)"
+          value={telefono}
+          onChange={(e) => setTelefono(e.target.value)}
+          className="register-input-field"
+        />
+
+        <input
+          placeholder="Dirección (opcional)"
+          value={direccion}
+          onChange={(e) => setDireccion(e.target.value)}
           className="register-input-field"
         />
         

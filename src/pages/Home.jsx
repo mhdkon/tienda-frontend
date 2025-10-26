@@ -53,30 +53,77 @@ export default function Home() {
       const res = await fetch(`${API}/carrito`, {
         headers: { Authorization: "Bearer " + token },
       });
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          setCarrito([]);
+          setContadorAñadidos(0);
+          return;
+        }
+        throw new Error(`Error ${res.status}: ${res.statusText}`);
+      }
+      
       const data = await res.json();
-      setCarrito(data);
-      // Contador solo refleja productos sin pagar
-      const noPagados = data.filter((p) => !p.pagado).length;
-      setContadorAñadidos(noPagados);
+      
+      if (Array.isArray(data)) {
+        setCarrito(data);
+        setContadorAñadidos(data.length);
+      } else {
+        setCarrito([]);
+        setContadorAñadidos(0);
+      }
     } catch (error) {
       console.error("Error al cargar carrito:", error);
+      setCarrito([]);
+      setContadorAñadidos(0);
     }
   };
 
-  const handleAñadirCarrito = async (p) => {
+  // ✅ FUNCIÓN CORREGIDA: Añadir producto al carrito
+  const handleAñadirCarrito = async (idProducto) => {
     try {
-      await fetch(`${API}/carrito/${p._id}`, {
+      console.log("🛒 Añadiendo producto ID:", idProducto);
+      
+      const response = await fetch(`${API}/carrito/${idProducto}`, {
         method: "POST",
-        headers: { Authorization: "Bearer " + token },
+        headers: { 
+          Authorization: "Bearer " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          productoId: idProducto,
+          cantidad: 1,
+          talla: "38" // ✅ AÑADIDO: Talla por defecto requerida por el backend
+        })
       });
-      cargarCarrito(token);
+
+      console.log("📡 Response status:", response.status);
+
+      if (response.status === 401) {
+        alert("No autorizado. Por favor, inicia sesión nuevamente.");
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Error ${response.status}`);
+      }
+
+      const resultado = await response.json();
+      console.log("✅ Producto añadido:", resultado);
+      
+      // Recargar el carrito después de añadir
+      await cargarCarrito(token);
+      
     } catch (error) {
-      console.error("Error al añadir al carrito:", error);
+      console.error("❌ Error al añadir al carrito:", error);
+      alert(`Error al añadir producto: ${error.message}`);
     }
   };
 
   const handleCompraRealizada = () => {
     setContadorAñadidos(0);
+    cargarCarrito(token);
   };
 
   const handleLogoutConfirmado = () => {
@@ -123,7 +170,10 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (token) cargarProductos(token);
+    if (token) {
+      cargarProductos(token);
+      cargarCarrito(token);
+    }
   }, [token]);
 
   // --- Vistas ---
@@ -161,7 +211,7 @@ export default function Home() {
               className="btn-buscar-menu"
               disabled={buscando || !terminoBusqueda.trim()}
             >
-              {buscando ? "" : ""}
+              {buscando ? "Buscando..." : "Buscar"}
             </button>
             {terminoBusqueda && (
               <button
@@ -174,11 +224,9 @@ export default function Home() {
             )}
           </div>
 
-          <button onClick={() => setMostrarModal(true)}> Cerrar sesión</button>
+          <button onClick={() => setMostrarModal(true)}>Cerrar sesión</button>
           <button onClick={() => setView("carritoAñadidos")}>
-            {contadorAñadidos > 0
-              ? `${contadorAñadidos} producto${contadorAñadidos !== 1 ? "s" : ""} añadido${contadorAñadidos !== 1 ? "s" : ""}`
-              : "Producto añadido"}
+            {contadorAñadidos > 0 ? `Carrito (${contadorAñadidos})` : "Carrito"}
           </button>
         </div>
 
@@ -196,8 +244,8 @@ export default function Home() {
           <ul className="productos">
             {productosFiltrados.map((p) => (
               <ProductoCard
-                key={p._id}
-                producto={{ ...p, imagen: obtenerRutaImagen(p.imagen) }}
+                key={p.id}
+                producto={p}
                 onAñadir={handleAñadirCarrito}
                 onClickImagen={handleClickImagen}
               />

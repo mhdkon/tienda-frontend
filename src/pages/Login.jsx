@@ -3,14 +3,14 @@ import { loginUser } from "../utils/api";
 import "./../assets/css/Login.css";
 
 export default function Login({ onLoginSuccess, setView }) {
-  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState(""); // ✅ Cambiado: nombre → email
   const [password, setPassword] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const nombreRegex = /^[A-Z][a-z]+ [A-Z][a-z]+$/;
+  // ✅ Eliminada validación de nombre (ya no se necesita)
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 
   const mostrarMensaje = (texto, tipo) => {
@@ -20,20 +20,19 @@ export default function Login({ onLoginSuccess, setView }) {
   };
 
   const handleLogin = async () => {
-    const nombreTrim = nombre.trim();
+    const emailTrim = email.trim(); // ✅ Cambiado: nombreTrim → emailTrim
     const passwordTrim = password.trim();
 
-    // Validaciones
-    if (!nombreTrim || !passwordTrim) {
+    // ✅ Validaciones actualizadas
+    if (!emailTrim || !passwordTrim) {
       mostrarMensaje(" Completa todos los campos", "error");
       return;
     }
 
-    if (!nombreRegex.test(nombreTrim)) {
-      mostrarMensaje(
-        " El nombre debe tener formato 'Nombre Apellido' con mayúsculas iniciales",
-        "error"
-      );
+    // ✅ Validación de email (nueva)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailTrim)) {
+      mostrarMensaje(" Formato de email inválido", "error");
       return;
     }
 
@@ -45,9 +44,9 @@ export default function Login({ onLoginSuccess, setView }) {
       return;
     }
 
-    // Intento de login
+    // ✅ Intento de login con email
     setLoading(true);
-    const data = await loginUser(nombreTrim, passwordTrim);
+    const data = await loginUser(emailTrim, passwordTrim); // ✅ Envía email, no nombre
     setLoading(false);
 
     if (data.token) {
@@ -67,10 +66,12 @@ export default function Login({ onLoginSuccess, setView }) {
       <div className="login-form-box">
         <h2 className="login-title">Iniciar Sesión</h2>
         
+        {/* ✅ Cambiado: input de nombre → email */}
         <input
-          placeholder="Nombre"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          type="email" // ✅ Agregado type="email"
+          placeholder="Email" // ✅ Cambiado placeholder
+          value={email} // ✅ Cambiado: nombre → email
+          onChange={(e) => setEmail(e.target.value)} // ✅ Cambiado: setNombre → setEmail
           className="login-input-field"
         />
 
@@ -98,7 +99,6 @@ export default function Login({ onLoginSuccess, setView }) {
         >
           {loading ? " Iniciando sesión..." : " Iniciar Sesión"}
         </button>
-
 
         <button onClick={() => setView("menu")} className="login-back-btn">
            Volver al Menú Principal
