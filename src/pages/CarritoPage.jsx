@@ -6,7 +6,9 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
   const [tallaNueva, setTallaNueva] = useState("");
   const [mensajeCompra, setMensajeCompra] = useState("");
   const [cargando, setCargando] = useState(false);
-  const [cargandoItem, setCargandoItem] = useState(null);
+  const [eliminandoItem, setEliminandoItem] = useState(null);
+  const [actualizandoCantidad, setActualizandoCantidad] = useState(null);
+  const [editandoTallaItem, setEditandoTallaItem] = useState(null);
   const url = import.meta.env.VITE_API_URL;
 
   // Tallas disponibles para zapatos
@@ -14,7 +16,6 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
 
   useEffect(() => {
     if (token) obtenerCarrito();
-    else setCarrito([]);
   }, [token]);
 
   const obtenerCarrito = async () => {
@@ -26,11 +27,9 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
         const datos = await respuesta.json();
         setCarrito(Array.isArray(datos) ? datos : []);
       } else if (respuesta.status === 401) {
-        console.log("No autorizado - carrito vacío");
         setCarrito([]);
       }
     } catch (error) {
-      console.log("Error al cargar carrito:", error);
       setCarrito([]);
     }
   };
@@ -38,7 +37,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
   const cambiarCantidad = async (idProducto, nuevaCantidad) => {
     if (nuevaCantidad < 1) return;
     
-    setCargandoItem(idProducto);
+    setActualizandoCantidad(idProducto);
     try {
       const respuesta = await fetch(`${url}/carrito/cantidad/${idProducto}`, {
         method: "PUT",
@@ -49,18 +48,14 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
         body: JSON.stringify({ cantidad: nuevaCantidad }),
       });
       
-      if (!respuesta.ok) {
-        const errorData = await respuesta.json();
-        throw new Error(errorData.error || "Error al actualizar cantidad");
-      }
+      if (!respuesta.ok) return;
 
       const carritoActualizado = await respuesta.json();
       setCarrito(carritoActualizado);
     } catch (error) {
-      console.error("Error al actualizar cantidad:", error);
-      alert(error.message);
+      // Error silencioso
     } finally {
-      setCargandoItem(null);
+      setActualizandoCantidad(null);
     }
   };
 
@@ -71,29 +66,28 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
   };
 
   const quitarProducto = async (id) => {
-    setCargandoItem(id);
+    setEliminandoItem(id);
+    
+    // Eliminación inmediata del estado local
+    const productoEliminado = carrito.find(p => p.id === id);
+    setCarrito(prev => prev.filter(p => p.id !== id));
+    
     try {
       const respuesta = await fetch(`${url}/carrito/${id}`, { 
         method: "DELETE", 
         headers: { Authorization: "Bearer " + token } 
       });
       
-      if (respuesta.ok) {
-        // Actualizar carrito localmente filtrando el producto eliminado
-        setCarrito((prev) => (prev || []).filter((p) => p.id !== id));
-        
-        if (typeof onCompraRealizada === "function") {
-          onCompraRealizada();
-        }
-      } else {
-        const errorData = await respuesta.json();
-        throw new Error(errorData.error || "Error al eliminar producto");
+      if (!respuesta.ok) {
+        // Si falla en el servidor, revertir el cambio local
+        setCarrito(prev => [...prev, productoEliminado]);
+        alert("Error al eliminar producto");
       }
     } catch (error) {
-      console.log("Error al borrar producto:", error);
-      alert(error.message);
+      // Si hay error de red, revertir el cambio local
+      setCarrito(prev => [...prev, productoEliminado]);
     } finally {
-      setCargandoItem(null);
+      setEliminandoItem(null);
     }
   };
 
@@ -105,10 +99,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
         headers: { Authorization: "Bearer " + token },
       });
 
-      if (!respuesta.ok) {
-        const errorData = await respuesta.json();
-        throw new Error(errorData.error || "Error al procesar pago");
-      }
+      if (!respuesta.ok) return;
 
       const data = await respuesta.json();
       setCarrito([]);
@@ -121,10 +112,9 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
       setTimeout(() => {
         setMensajeCompra("");
         setView("tienda");
-      }, 3000);
+      }, 2000);
     } catch (error) {
-      console.log("Error al pagar todo:", error);
-      alert(error.message);
+      alert("Error al procesar el pago");
     } finally {
       setCargando(false);
     }
@@ -133,7 +123,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
   const cambiarTalla = async (id) => {
     if (!tallaNueva) return;
 
-    setCargandoItem(id);
+    setEditandoTallaItem(id);
     try {
       const respuesta = await fetch(`${url}/carrito/talla/${id}`, {
         method: "PUT",
@@ -144,10 +134,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
         body: JSON.stringify({ talla: tallaNueva }),
       });
 
-      if (!respuesta.ok) {
-        const errorData = await respuesta.json();
-        throw new Error(errorData.error || "Error al cambiar talla");
-      }
+      if (!respuesta.ok) return;
 
       const carritoActualizado = await respuesta.json();
       setCarrito(carritoActualizado);
@@ -155,10 +142,9 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
       setTallaNueva("");
       
     } catch (error) {
-      console.log("Error al cambiar talla:", error);
-      alert("Error: " + error.message);
+      alert("Error al cambiar talla");
     } finally {
-      setCargandoItem(null);
+      setEditandoTallaItem(null);
     }
   };
 
@@ -178,7 +164,6 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
     return `${url}${imagen}`;
   };
 
-  // ✅ CORREGIDO: Manejo seguro del carrito
   const totalPagar = () => {
     if (!carrito || !Array.isArray(carrito)) return 0;
     return carrito.reduce((total, producto) => {
@@ -186,10 +171,9 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
     }, 0);
   };
 
-  // Función para verificar si un item está cargando
-  const estaCargando = (id) => cargandoItem === id;
-
-  // ✅ CORREGIDO: Verificación segura del carrito
+  const estaEliminando = (id) => eliminandoItem === id;
+  const estaActualizandoCantidad = (id) => actualizandoCantidad === id;
+  const estaEditandoTalla = (id) => editandoTallaItem === id;
   const carritoVacio = !carrito || carrito.length === 0;
 
   return (
@@ -214,11 +198,6 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
       {carritoVacio ? (
         <div className="carrito-vacio">
           <p>No hay productos en el carrito</p>
-          <button 
-            onClick={() => setView("tienda")}
-            disabled={cargando}
-          >
-          </button>
         </div>
       ) : (
         <>
@@ -226,7 +205,9 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
             {carrito.map((producto) => {
               const cantidad = producto.cantidad || 1;
               const tallaActual = producto.talla || "No especificada";
-              const itemCargando = estaCargando(producto.id);
+              const eliminando = estaEliminando(producto.id);
+              const actualizandoCant = estaActualizandoCantidad(producto.id);
+              const editandoTalla = estaEditandoTalla(producto.id);
               
               return (
                 <li key={producto.id} className="carrito-item">
@@ -249,7 +230,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                     <div className="carrito-detalles">
                       <div className="carrito-cantidad-info">
                         Cantidad: {cantidad}
-                        {itemCargando && <span className="cargando-texto"> (Actualizando...)</span>}
+                        {actualizandoCant && <span className="cargando-texto"> (Actualizando...)</span>}
                       </div>
                       <div className="carrito-talla-info">
                         Talla: <strong>{tallaActual}</strong>
@@ -262,7 +243,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                       <button 
                         className="btn-restar" 
                         onClick={() => disminuirCantidad(producto.id, cantidad)} 
-                        disabled={itemCargando || cantidad <= 1}
+                        disabled={actualizandoCant || eliminando || editandoTalla || cantidad <= 1}
                       >
                         -
                       </button>
@@ -270,7 +251,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                       <button 
                         className="btn-sumar" 
                         onClick={() => aumentarCantidad(producto.id, cantidad)} 
-                        disabled={itemCargando}
+                        disabled={actualizandoCant || eliminando || editandoTalla}
                       >
                         +
                       </button>
@@ -279,17 +260,17 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                     <button 
                       className="carrito-btn-borrar" 
                       onClick={() => quitarProducto(producto.id)}
-                      disabled={itemCargando || cargando}
+                      disabled={actualizandoCant || eliminando || editandoTalla || cargando}
                     >
-                      {itemCargando ? "Eliminando..." : "Eliminar"}
+                      {eliminando ? "Eliminando..." : "Eliminar"}
                     </button>
                     
                     <button 
                       className="carrito-btn-editar" 
                       onClick={() => iniciarEdicionTalla(producto)}
-                      disabled={itemCargando || cargando}
+                      disabled={actualizandoCant || eliminando || editandoTalla || cargando}
                     >
-                      Cambiar Talla
+                      {editandoTalla ? "Editando..." : "Cambiar Talla"}
                     </button>
                   </div>
 
@@ -301,7 +282,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                           className="carrito-select" 
                           value={tallaNueva} 
                           onChange={(e) => setTallaNueva(e.target.value)}
-                          disabled={cargandoItem === producto.id}
+                          disabled={editandoTalla}
                         >
                           <option value="">Selecciona talla</option>
                           {tallasDisponibles.map((talla) => (
@@ -315,14 +296,14 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                         <button 
                           className="carrito-btn-guardar" 
                           onClick={() => cambiarTalla(producto.id)}
-                          disabled={cargandoItem === producto.id || !tallaNueva}
+                          disabled={editandoTalla || !tallaNueva}
                         >
-                          {cargandoItem === producto.id ? "Guardando..." : "Guardar"}
+                          {editandoTalla ? "Guardando..." : "Guardar"}
                         </button>
                         <button 
                           className="carrito-btn-cancelar" 
                           onClick={cancelarEdicion}
-                          disabled={cargandoItem === producto.id}
+                          disabled={editandoTalla}
                         >
                           Cancelar
                         </button>

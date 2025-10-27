@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Login from "./Login";
 import Register from "./Register";
 import CarritoPage from "./CarritoPage";
@@ -18,49 +18,49 @@ export default function Home() {
   const [buscando, setBuscando] = useState(false);
   const [mostrandoResultados, setMostrandoResultados] = useState(false);
   const [imagenGrande, setImagenGrande] = useState("");
+  const [mensajeProductoAñadido, setMensajeProductoAñadido] = useState("");
 
   const API = import.meta.env.VITE_API_URL;
 
-  const obtenerRutaImagen = (imagen) => {
+  const obtenerRutaImagen = useCallback((imagen) => {
     if (!imagen) return `${API}/fallback.jpg`;
     if (imagen.startsWith("http")) return imagen;
     return `${API}${imagen}`;
-  };
+  }, [API]);
 
-  const onLoginSuccess = (token, mensaje) => {
+  const onLoginSuccess = useCallback((token, mensaje) => {
     setToken(token);
     setMensaje(mensaje);
     setView("tienda");
-    cargarProductos(token);
-    cargarCarrito(token);
-  };
+    Promise.all([cargarProductos(token), cargarCarrito(token)]);
+  }, []);
 
   const cargarProductos = async (token) => {
     try {
       const res = await fetch(`${API}/productos`, {
-        headers: { Authorization: "Bearer " + token },
+        headers: { Authorization: "Bearer " + token }
       });
+      
+      if (!res.ok) return;
+      
       const data = await res.json();
       setProductos(data);
       setProductosFiltrados(data);
     } catch (error) {
-      console.error("Error al cargar productos:", error);
+      // Error silencioso
     }
   };
 
   const cargarCarrito = async (token) => {
     try {
       const res = await fetch(`${API}/carrito`, {
-        headers: { Authorization: "Bearer " + token },
+        headers: { Authorization: "Bearer " + token }
       });
       
       if (!res.ok) {
-        if (res.status === 401) {
-          setCarrito([]);
-          setContadorAñadidos(0);
-          return;
-        }
-        throw new Error(`Error ${res.status}: ${res.statusText}`);
+        setCarrito([]);
+        setContadorAñadidos(0);
+        return;
       }
       
       const data = await res.json();
@@ -73,17 +73,13 @@ export default function Home() {
         setContadorAñadidos(0);
       }
     } catch (error) {
-      console.error("Error al cargar carrito:", error);
       setCarrito([]);
       setContadorAñadidos(0);
     }
   };
 
-  // ✅ FUNCIÓN CORREGIDA: Añadir producto al carrito
-  const handleAñadirCarrito = async (idProducto) => {
+  const handleAñadirCarrito = useCallback(async (idProducto) => {
     try {
-      console.log("🛒 Añadiendo producto ID:", idProducto);
-      
       const response = await fetch(`${API}/carrito/${idProducto}`, {
         method: "POST",
         headers: { 
@@ -93,40 +89,41 @@ export default function Home() {
         body: JSON.stringify({
           productoId: idProducto,
           cantidad: 1,
-          talla: "38" // ✅ AÑADIDO: Talla por defecto requerida por el backend
+          talla: "38"
         })
       });
-
-      console.log("📡 Response status:", response.status);
 
       if (response.status === 401) {
         alert("No autorizado. Por favor, inicia sesión nuevamente.");
         return;
       }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Error ${response.status}`);
-      }
+      if (!response.ok) return;
 
-      const resultado = await response.json();
-      console.log("✅ Producto añadido:", resultado);
+      setContadorAñadidos(prev => prev + 1);
       
-      // Recargar el carrito después de añadir
-      await cargarCarrito(token);
+      // Mostrar mensaje de producto añadido
+      const productoAñadido = productos.find(p => p.id === idProducto);
+      setMensajeProductoAñadido(`✅ ${productoAñadido?.nombre || 'Producto'} añadido al carrito`);
+      
+      // Ocultar mensaje después de 2 segundos
+      setTimeout(() => {
+        setMensajeProductoAñadido("");
+      }, 2000);
+      
+      cargarCarrito(token);
       
     } catch (error) {
-      console.error("❌ Error al añadir al carrito:", error);
-      alert(`Error al añadir producto: ${error.message}`);
+      alert("Error al añadir producto al carrito");
     }
-  };
+  }, [token, API, productos]);
 
-  const handleCompraRealizada = () => {
+  const handleCompraRealizada = useCallback(() => {
     setContadorAñadidos(0);
-    cargarCarrito(token);
-  };
+    setCarrito([]);
+  }, []);
 
-  const handleLogoutConfirmado = () => {
+  const handleLogoutConfirmado = useCallback(() => {
     setToken("");
     setMensaje("");
     setCarrito([]);
@@ -137,37 +134,48 @@ export default function Home() {
     setMostrandoResultados(false);
     setView("menu");
     setMostrarModal(false);
-  };
+    setMensajeProductoAñadido("");
+  }, []);
 
-  const handleClickImagen = (imagen) => setImagenGrande(obtenerRutaImagen(imagen));
-  const cerrarImagen = () => setImagenGrande("");
+  const handleClickImagen = useCallback((imagen) => {
+    setImagenGrande(obtenerRutaImagen(imagen));
+  }, [obtenerRutaImagen]);
 
-  const handleBuscar = async () => {
-    if (!terminoBusqueda.trim()) return alert("Por favor ingresa un término de búsqueda");
+  const cerrarImagen = useCallback(() => setImagenGrande(""), []);
+
+  const handleBuscar = useCallback(async () => {
+    if (!terminoBusqueda.trim()) {
+      alert("Por favor ingresa un término de búsqueda");
+      return;
+    }
+    
     setBuscando(true);
     try {
       const res = await fetch(
         `${API}/productos/buscar?nombre=${encodeURIComponent(terminoBusqueda)}`,
-        { headers: { Authorization: "Bearer " + token } }
+        { 
+          headers: { Authorization: "Bearer " + token }
+        }
       );
-      if (!res.ok) throw new Error("Error en la búsqueda");
+      
+      if (!res.ok) return;
+      
       const resultados = await res.json();
       setProductosFiltrados(resultados);
       setMostrandoResultados(true);
     } catch (error) {
-      console.error(error);
       alert("Error al buscar productos");
     } finally {
       setBuscando(false);
     }
-  };
+  }, [terminoBusqueda, token, API]);
 
-  const limpiarBusqueda = () => {
+  const limpiarBusqueda = useCallback(() => {
     setTerminoBusqueda("");
     setProductosFiltrados(productos);
     setMostrandoResultados(false);
     setBuscando(false);
-  };
+  }, [productos]);
 
   useEffect(() => {
     if (token) {
@@ -211,7 +219,7 @@ export default function Home() {
               className="btn-buscar-menu"
               disabled={buscando || !terminoBusqueda.trim()}
             >
-              {buscando ? "Buscando..." : "Buscar"}
+              🔍
             </button>
             {terminoBusqueda && (
               <button
@@ -263,6 +271,13 @@ export default function Home() {
                 Ver todos los productos
               </button>
             )}
+          </div>
+        )}
+
+        {/* Mensaje fijo abajo a la derecha */}
+        {mensajeProductoAñadido && (
+          <div className="mensaje-producto-añadido">
+            {mensajeProductoAñadido}
           </div>
         )}
 

@@ -601,3 +601,42 @@ body {
     padding: 10px 15px;
   }
 }
+.mensaje-producto-añadido {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  animation: slideInRight 0.3s ease-out;
+  max-width: 250px;
+  font-size: 14px;
+  border: 1px solid #45a049;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Para móviles */
+@media (max-width: 768px) {
+  .mensaje-producto-añadido {
+    bottom: 15px;
+    right: 15px;
+    left: auto;
+    max-width: 200px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
