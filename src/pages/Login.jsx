@@ -3,14 +3,13 @@ import { loginUser } from "../utils/api";
 import "./../assets/css/Login.css";
 
 export default function Login({ onLoginSuccess, setView }) {
-  const [email, setEmail] = useState(""); // ✅ Cambiado: nombre → email
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // ✅ Eliminada validación de nombre (ya no se necesita)
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
 
   const mostrarMensaje = (texto, tipo) => {
@@ -20,40 +19,39 @@ export default function Login({ onLoginSuccess, setView }) {
   };
 
   const handleLogin = async () => {
-    const emailTrim = email.trim(); // ✅ Cambiado: nombreTrim → emailTrim
+    const emailTrim = email.trim();
     const passwordTrim = password.trim();
 
-    // ✅ Validaciones actualizadas
+    // ✅ Validaciones
     if (!emailTrim || !passwordTrim) {
-      mostrarMensaje(" Completa todos los campos", "error");
+      mostrarMensaje("Completa todos los campos", "error");
       return;
     }
 
-    // ✅ Validación de email (nueva)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailTrim)) {
-      mostrarMensaje(" Formato de email inválido", "error");
+      mostrarMensaje("Formato de email inválido", "error");
       return;
     }
 
     if (!passwordRegex.test(passwordTrim)) {
       mostrarMensaje(
-        " La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
+        "La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
         "error"
       );
       return;
     }
 
-    // ✅ Intento de login con email
+    // ✅ Intento de login
     setLoading(true);
-    const data = await loginUser(emailTrim, passwordTrim); // ✅ Envía email, no nombre
+    const data = await loginUser(emailTrim, passwordTrim);
     setLoading(false);
 
     if (data.token) {
-      mostrarMensaje(" " + data.mensaje, "success");
-      setTimeout(() => onLoginSuccess(data.token, data.mensaje), 500);
+      mostrarMensaje(data.mensaje || "Inicio de sesión correcto", "success");
+      setTimeout(() => onLoginSuccess(data.token, data.mensaje), 800);
     } else {
-      mostrarMensaje(" " + (data.error || "Error al iniciar sesión"), "error");
+      mostrarMensaje(data.error || "Error al iniciar sesión", "error");
     }
   };
 
@@ -65,13 +63,12 @@ export default function Login({ onLoginSuccess, setView }) {
     <div className="login-page-container">
       <div className="login-form-box">
         <h2 className="login-title">Iniciar Sesión</h2>
-        
-        {/* ✅ Cambiado: input de nombre → email */}
+
         <input
-          type="email" // ✅ Agregado type="email"
-          placeholder="Email" // ✅ Cambiado placeholder
-          value={email} // ✅ Cambiado: nombre → email
-          onChange={(e) => setEmail(e.target.value)} // ✅ Cambiado: setNombre → setEmail
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="login-input-field"
         />
 
@@ -97,11 +94,18 @@ export default function Login({ onLoginSuccess, setView }) {
           className="login-submit-btn"
           disabled={loading}
         >
-          {loading ? " Iniciando sesión..." : " Iniciar Sesión"}
+          {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
         </button>
 
+        {/* ✅ Aquí añadimos el mensaje igual que en Register */}
+        {mensaje && (
+          <div className={`login-message ${tipoMensaje}`}>
+            {mensaje}
+          </div>
+        )}
+
         <button onClick={() => setView("menu")} className="login-back-btn">
-           Volver al Menú Principal
+          Volver al Menú Principal
         </button>
       </div>
     </div>
