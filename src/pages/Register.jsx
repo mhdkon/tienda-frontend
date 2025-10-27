@@ -98,14 +98,14 @@ export default function Register({ setView }) {
         />
 
         <input
-          placeholder="Teléfono (opcional)"
+          placeholder="Teléfono "
           value={telefono}
           onChange={(e) => setTelefono(e.target.value)}
           className="register-input-field"
         />
 
         <input
-          placeholder="Dirección (opcional)"
+          placeholder="Dirección "
           value={direccion}
           onChange={(e) => setDireccion(e.target.value)}
           className="register-input-field"
