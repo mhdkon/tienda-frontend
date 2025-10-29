@@ -15,16 +15,18 @@ export default function Carrito({
 }) {
   const API = import.meta.env.VITE_API_URL;
 
+  // Convertir a arrays por si acaso
   const carritoArray = Array.isArray(carrito) ? carrito : [];
   const productosArray = Array.isArray(productos) ? productos : [];
 
+  // Función para obtener la ruta de la imagen
   const obtenerRutaImagen = (imagen) => {
     if (!imagen) return "/fallback.jpg";
     if (imagen.startsWith("http")) return imagen;
     return `${API}${imagen}`;
   };
 
-  // 🧠 Nueva función: actualizar cantidad en el backend
+  // Función para actualizar cantidad en el servidor
   const actualizarCantidad = async (id, nuevaCantidad) => {
     if (!token) return;
     try {
@@ -38,7 +40,7 @@ export default function Carrito({
       });
 
       if (res.ok) {
-        // Actualizar el estado local
+        // Actualizar la lista local
         setCarrito((prev) =>
           prev.map((p) =>
             p._id === id ? { ...p, cantidad: nuevaCantidad } : p
@@ -53,13 +55,13 @@ export default function Carrito({
     }
   };
 
-  // 🔼 Incrementar
+  // Aumentar cantidad
   const aumentarCantidad = (id, actual) => {
     const nuevaCantidad = actual + 1;
     actualizarCantidad(id, nuevaCantidad);
   };
 
-  // 🔽 Disminuir
+  // Disminuir cantidad
   const disminuirCantidad = (id, actual) => {
     if (actual > 1) {
       const nuevaCantidad = actual - 1;
@@ -69,14 +71,19 @@ export default function Carrito({
 
   return (
     <ul className="carrito-lista-tickets">
+      {/* Mostrar mensaje si el carrito está vacío */}
       {carritoArray.length === 0 ? (
         <p>No hay productos en el carrito</p>
       ) : (
+        // Mostrar lista de productos en el carrito
         carritoArray.map((p) => (
           <li key={p._id} className="ticket">
+            {/* Imagen del producto */}
             <img src={obtenerRutaImagen(p.imagen)} alt={p.nombre} />
             <div className="ticket-info">
+              {/* Nombre del producto */}
               <h4>{p.nombre}</h4>
+              {/* Precio del producto */}
               <p>
                 {(p.precio || 0).toLocaleString("es-ES", {
                   style: "currency",
@@ -84,19 +91,22 @@ export default function Carrito({
                 })}
               </p>
 
-              {/* 🔢 Mostrar cantidad y botones */}
+              {/* Controles para cambiar cantidad */}
               <div className="cantidad-controles">
                 <button onClick={() => disminuirCantidad(p._id, p.cantidad || 1)}>-</button>
                 <span>{p.cantidad || 1}</span>
                 <button onClick={() => aumentarCantidad(p._id, p.cantidad || 1)}>+</button>
               </div>
 
+              {/* Estado de pago */}
               <span className={p.pagado ? "estado pagado" : "estado no-pagado"}>
-                {p.pagado ? "✅ Pagado" : "❌ No pagado"}
+                {p.pagado ? "Pagado" : "No pagado"}
               </span>
             </div>
 
+            {/* Botones de acciones */}
             <div className="ticket-acciones">
+              {/* Botón pagar solo si no está pagado */}
               {!p.pagado && (
                 <button onClick={() => handlePagar(p._id)}>Pagar</button>
               )}
@@ -104,6 +114,7 @@ export default function Carrito({
               <button onClick={() => setEditarId(p._id)}>Editar</button>
             </div>
 
+            {/* Formulario de edición */}
             {editarId === p._id && (
               <div className="ticket-editar">
                 <select
@@ -111,6 +122,7 @@ export default function Carrito({
                   onChange={(e) => setNuevoProducto(e.target.value)}
                 >
                   <option value="">Selecciona un producto</option>
+                  {/* Lista de productos disponibles */}
                   {productosArray.map((prod) => (
                     <option key={prod._id} value={prod._id}>
                       {prod.nombre}

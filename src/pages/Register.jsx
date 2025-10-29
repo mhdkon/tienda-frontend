@@ -3,75 +3,87 @@ import { registerUser } from "../utils/api";
 import "./../assets/css/Register.css";
 
 export default function Register({ setView }) {
+  // Estados para guardar los datos del formulario
   const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState(""); // ✅ Nuevo campo
-  const [telefono, setTelefono] = useState(""); // ✅ Nuevo campo
-  const [direccion, setDireccion] = useState(""); // ✅ Nuevo campo
+  const [email, setEmail] = useState(""); 
+  const [telefono, setTelefono] = useState(""); 
+  const [direccion, setDireccion] = useState(""); 
   const [password, setPassword] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  // Reglas para validar los datos
   const nombreRegex = /^[A-Z][a-z]+ [A-Z][a-z]+$/;
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // ✅ Nueva validación
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
 
+  // Función para mostrar mensajes
   const mostrarMensaje = (texto, tipo) => {
     setMensaje(texto);
     setTipoMensaje(tipo);
     setTimeout(() => setMensaje(""), 5000);
   };
 
+  // Función que se ejecuta al hacer clic en Registrarse
   const handleRegister = async () => {
+    // Limpiar espacios en blanco
     const nombreTrim = nombre.trim();
-    const emailTrim = email.trim(); // ✅ Nuevo
+    const emailTrim = email.trim(); 
+    const telefonoTrim = telefono.trim();
+    const direccionTrim = direccion.trim();
     const passwordTrim = password.trim();
 
-    // ✅ Validaciones actualizadas
-    if (!nombreTrim || !emailTrim || !passwordTrim) { // ✅ Agregado email
-      mostrarMensaje(" Completa todos los campos obligatorios", "error");
+    // Verificar que todos los campos estén llenos
+    if (!nombreTrim || !emailTrim || !telefonoTrim || !direccionTrim || !passwordTrim) { 
+      mostrarMensaje("Completa todos los campos obligatorios", "error");
       return;
     }
 
+    // Verificar formato del nombre
     if (!nombreRegex.test(nombreTrim)) {
       mostrarMensaje(
-        " El nombre debe tener formato 'Nombre Apellido' con mayúsculas iniciales",
+        "El nombre debe tener formato 'Nombre Apellido' con mayúsculas iniciales",
         "error"
       );
       return;
     }
 
-    // ✅ Validación de email
+    // Verificar formato del email
     if (!emailRegex.test(emailTrim)) {
-      mostrarMensaje(" Formato de email inválido", "error");
+      mostrarMensaje("Formato de email inválido", "error");
       return;
     }
 
+    // Verificar formato de la contraseña
     if (!passwordRegex.test(passwordTrim)) {
       mostrarMensaje(
-        " La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
+        "La contraseña debe tener mínimo 6 caracteres, al menos una letra y un número",
         "error"
       );
       return;
     }
 
-    // ✅ Llamada actualizada con nuevos campos
+    // Llamar a la función que registra en la base de datos
     const data = await registerUser(
       nombreTrim, 
-      emailTrim, // ✅ Nuevo
-      telefono,   // ✅ Nuevo
-      direccion,  // ✅ Nuevo
+      emailTrim, 
+      telefonoTrim,   
+      direccionTrim,  
       passwordTrim
     );
 
+    // Si el registro sale bien
     if (data.mensaje) {
-      mostrarMensaje(" " + data.mensaje, "success");
+      mostrarMensaje(data.mensaje, "success");
       setTimeout(() => setView("login"), 1000);
     } else {
-      mostrarMensaje(" " + (data.error || "Error en registro"), "error");
+      // Si hay error
+      mostrarMensaje(data.error || "Error en registro", "error");
     }
   };
 
+  // Mostrar u ocultar la contraseña
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -81,43 +93,52 @@ export default function Register({ setView }) {
       <div className="register-form-box">
         <h2 className="register-title">Únete a Solex</h2>
         
+        {/* Input para el nombre */}
         <input
-          placeholder="Nombre Completo"
+          placeholder="Nombre Completo *"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           className="register-input-field"
+          required
         />
 
-        {/* ✅ Nuevos campos agregados */}
+        {/* Input para el email */}
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Email *"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="register-input-field"
+          required
         />
 
+        {/* Input para el teléfono */}
         <input
-          placeholder="Teléfono "
+          placeholder="Teléfono *"
           value={telefono}
           onChange={(e) => setTelefono(e.target.value)}
           className="register-input-field"
+          required
         />
 
+        {/* Input para la dirección */}
         <input
-          placeholder="Dirección "
+          placeholder="Dirección *"
           value={direccion}
           onChange={(e) => setDireccion(e.target.value)}
           className="register-input-field"
+          required
         />
         
+        {/* Input para la contraseña con botón para verla */}
         <div className="register-password-container">
           <input
             type={showPassword ? "text" : "password"}
-            placeholder="Contraseña"
+            placeholder="Contraseña *"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="register-input-field register-password-input"
+            required
           />
           <button
             type="button"
@@ -128,16 +149,19 @@ export default function Register({ setView }) {
           </button>
         </div>
         
+        {/* Botón para registrarse */}
         <button onClick={handleRegister} className="register-submit-btn">
           Registrarse
         </button>
 
+        {/* Aquí aparecen los mensajes de éxito o error */}
         {mensaje && (
           <div className={`register-message ${tipoMensaje}`}>
             {mensaje}
           </div>
         )}
 
+        {/* Botón para volver al menú principal */}
         <button onClick={() => setView("menu")} className="register-back-btn">
           Volver al menú
         </button>

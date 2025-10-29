@@ -6,6 +6,7 @@ import ProductoCard from "../components/ProductoCard";
 import "./../assets/css/Tienda.css";
 
 export default function Home() {
+  // Estados para guardar información
   const [view, setView] = useState("menu");
   const [token, setToken] = useState("");
   const [mensaje, setMensaje] = useState("");
@@ -20,21 +21,26 @@ export default function Home() {
   const [imagenGrande, setImagenGrande] = useState("");
   const [mensajeProductoAñadido, setMensajeProductoAñadido] = useState("");
 
+  // URL de la API
   const API = import.meta.env.VITE_API_URL;
 
+  // Función para obtener la ruta de la imagen
   const obtenerRutaImagen = useCallback((imagen) => {
     if (!imagen) return `${API}/fallback.jpg`;
     if (imagen.startsWith("http")) return imagen;
     return `${API}${imagen}`;
   }, [API]);
 
+  // Función que se ejecuta cuando el login sale bien
   const onLoginSuccess = useCallback((token, mensaje) => {
     setToken(token);
     setMensaje(mensaje);
     setView("tienda");
+    // Cargar productos y carrito
     Promise.all([cargarProductos(token), cargarCarrito(token)]);
   }, []);
 
+  // Cargar productos desde la API
   const cargarProductos = async (token) => {
     try {
       const res = await fetch(`${API}/productos`, {
@@ -51,6 +57,7 @@ export default function Home() {
     }
   };
 
+  // Cargar carrito desde la API
   const cargarCarrito = async (token) => {
     try {
       const res = await fetch(`${API}/carrito`, {
@@ -78,6 +85,7 @@ export default function Home() {
     }
   };
 
+  // Añadir producto al carrito
   const handleAñadirCarrito = useCallback(async (idProducto) => {
     try {
       const response = await fetch(`${API}/carrito/${idProducto}`, {
@@ -100,17 +108,19 @@ export default function Home() {
 
       if (!response.ok) return;
 
+      // Aumentar contador
       setContadorAñadidos(prev => prev + 1);
       
       // Mostrar mensaje de producto añadido
       const productoAñadido = productos.find(p => p.id === idProducto);
-      setMensajeProductoAñadido(`✅ ${productoAñadido?.nombre || 'Producto'} añadido al carrito`);
+      setMensajeProductoAñadido(`${productoAñadido?.nombre || 'Producto'} añadido al carrito`);
       
       // Ocultar mensaje después de 2 segundos
       setTimeout(() => {
         setMensajeProductoAñadido("");
       }, 2000);
       
+      // Recargar carrito
       cargarCarrito(token);
       
     } catch (error) {
@@ -118,11 +128,13 @@ export default function Home() {
     }
   }, [token, API, productos]);
 
+  // Función cuando se completa una compra
   const handleCompraRealizada = useCallback(() => {
     setContadorAñadidos(0);
     setCarrito([]);
   }, []);
 
+  // Función para cerrar sesión
   const handleLogoutConfirmado = useCallback(() => {
     setToken("");
     setMensaje("");
@@ -137,12 +149,15 @@ export default function Home() {
     setMensajeProductoAñadido("");
   }, []);
 
+  // Función para mostrar imagen grande
   const handleClickImagen = useCallback((imagen) => {
     setImagenGrande(obtenerRutaImagen(imagen));
   }, [obtenerRutaImagen]);
 
+  // Función para cerrar imagen grande
   const cerrarImagen = useCallback(() => setImagenGrande(""), []);
 
+  // Función para buscar productos
   const handleBuscar = useCallback(async () => {
     if (!terminoBusqueda.trim()) {
       alert("Por favor ingresa un término de búsqueda");
@@ -170,6 +185,7 @@ export default function Home() {
     }
   }, [terminoBusqueda, token, API]);
 
+  // Función para limpiar búsqueda
   const limpiarBusqueda = useCallback(() => {
     setTerminoBusqueda("");
     setProductosFiltrados(productos);
@@ -177,6 +193,7 @@ export default function Home() {
     setBuscando(false);
   }, [productos]);
 
+  // Cargar productos y carrito cuando hay token
   useEffect(() => {
     if (token) {
       cargarProductos(token);
@@ -219,7 +236,7 @@ export default function Home() {
               className="btn-buscar-menu"
               disabled={buscando || !terminoBusqueda.trim()}
             >
-              🔍
+              Buscar
             </button>
             {terminoBusqueda && (
               <button
@@ -227,7 +244,7 @@ export default function Home() {
                 className="btn-limpiar-menu"
                 title="Limpiar búsqueda"
               >
-                ✕
+                X
               </button>
             )}
           </div>

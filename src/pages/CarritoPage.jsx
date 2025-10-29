@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "../assets/css/index.css";
 
 function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraRealizada }) {
+  // Estados para guardar información
   const [editando, setEditando] = useState(null);
   const [tallaNueva, setTallaNueva] = useState("");
   const [mensajeCompra, setMensajeCompra] = useState("");
@@ -11,13 +12,15 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
   const [editandoTallaItem, setEditandoTallaItem] = useState(null);
   const url = import.meta.env.VITE_API_URL;
 
-  // Tallas disponibles para zapatos
+  // Lista de tallas disponibles
   const tallasDisponibles = ["35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
 
+  // Cargar carrito cuando hay token
   useEffect(() => {
     if (token) obtenerCarrito();
   }, [token]);
 
+  // Obtener carrito desde la API
   const obtenerCarrito = async () => {
     try {
       const respuesta = await fetch(`${url}/carrito`, {
@@ -34,6 +37,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
     }
   };
 
+  // Cambiar cantidad de un producto
   const cambiarCantidad = async (idProducto, nuevaCantidad) => {
     if (nuevaCantidad < 1) return;
     
@@ -59,16 +63,19 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
     }
   };
 
+  // Aumentar cantidad
   const aumentarCantidad = (id, cantidadAhora) => cambiarCantidad(id, cantidadAhora + 1);
   
+  // Disminuir cantidad
   const disminuirCantidad = (id, cantidadAhora) => { 
     if (cantidadAhora > 1) cambiarCantidad(id, cantidadAhora - 1); 
   };
 
+  // Quitar producto del carrito
   const quitarProducto = async (id) => {
     setEliminandoItem(id);
     
-    // Eliminación inmediata del estado local
+    // Quitar producto de la lista local
     const productoEliminado = carrito.find(p => p.id === id);
     setCarrito(prev => prev.filter(p => p.id !== id));
     
@@ -79,18 +86,19 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
       });
       
       if (!respuesta.ok) {
-        // Si falla en el servidor, revertir el cambio local
+        // Si falla, volver a poner el producto
         setCarrito(prev => [...prev, productoEliminado]);
         alert("Error al eliminar producto");
       }
     } catch (error) {
-      // Si hay error de red, revertir el cambio local
+      // Si hay error, volver a poner el producto
       setCarrito(prev => [...prev, productoEliminado]);
     } finally {
       setEliminandoItem(null);
     }
   };
 
+  // Pagar todo el carrito
   const pagarTodo = async () => {
     setCargando(true);
     try {
@@ -105,10 +113,12 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
       setCarrito([]);
       setMensajeCompra(data.mensaje || "Muchas gracias por tu compra");
       
+      // Llamar función cuando se completa la compra
       if (typeof onCompraRealizada === "function") {
         onCompraRealizada();
       }
       
+      // Volver a tienda después de 2 segundos
       setTimeout(() => {
         setMensajeCompra("");
         setView("tienda");
@@ -120,6 +130,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
     }
   };
 
+  // Cambiar talla de un producto
   const cambiarTalla = async (id) => {
     if (!tallaNueva) return;
 
@@ -148,22 +159,26 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
     }
   };
 
+  // Empezar a editar la talla
   const iniciarEdicionTalla = (producto) => {
     setEditando(producto.id);
     setTallaNueva(producto.talla || "38");
   };
 
+  // Cancelar edición de talla
   const cancelarEdicion = () => {
     setEditando(null);
     setTallaNueva("");
   };
 
+  // Obtener ruta de la imagen
   const obtenerRutaImagen = (imagen) => {
     if (!imagen) return `${url}/fallback.jpg`;
     if (imagen.startsWith("http")) return imagen;
     return `${url}${imagen}`;
   };
 
+  // Calcular total a pagar
   const totalPagar = () => {
     if (!carrito || !Array.isArray(carrito)) return 0;
     return carrito.reduce((total, producto) => {
@@ -171,6 +186,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
     }, 0);
   };
 
+  // Funciones para verificar estados
   const estaEliminando = (id) => eliminandoItem === id;
   const estaActualizandoCantidad = (id) => actualizandoCantidad === id;
   const estaEditandoTalla = (id) => editandoTallaItem === id;
@@ -185,10 +201,11 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
           onClick={() => setView("tienda")}
           disabled={cargando}
         >
-          ← Volver a tienda
+          Volver a tienda
         </button>
       </div>
 
+      {/* Mostrar mensaje de compra exitosa */}
       {mensajeCompra && (
         <div className="mensaje-compra">
           {mensajeCompra}
@@ -211,6 +228,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
               
               return (
                 <li key={producto.id} className="carrito-item">
+                  {/* Imagen del producto */}
                   <img 
                     className="carrito-img" 
                     src={obtenerRutaImagen(producto.imagen)} 
@@ -238,6 +256,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                     </div>
                   </div>
 
+                  {/* Botones para acciones */}
                   <div className="carrito-acciones">
                     <div className="controles-cantidad">
                       <button 
@@ -274,6 +293,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
                     </button>
                   </div>
 
+                  {/* Formulario para cambiar talla */}
                   {editando === producto.id && (
                     <div className="carrito-editar">
                       <h4>Cambiar talla para: {producto.nombre}</h4>
@@ -315,6 +335,7 @@ function CarritoPage({ token, carrito, productos, setCarrito, setView, onCompraR
             })}
           </ul>
 
+          {/* Total y botón de pagar */}
           <div className="carrito-total">
             <p className="carrito-total-texto">
               Total a pagar: {totalPagar().toLocaleString("es-ES", { 
