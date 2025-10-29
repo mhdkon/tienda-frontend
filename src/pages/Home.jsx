@@ -6,87 +6,74 @@ import ProductoCard from "../components/ProductoCard";
 import "./../assets/css/Tienda.css";
 
 export default function Home() {
-  // Estados para guardar información
   const [view, setView] = useState("menu");
   const [token, setToken] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [productos, setProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [carrito, setCarrito] = useState([]);
-  const [contadorAñadidos, setContadorAñadidos] = useState(0);
+  const [contadorCarrito, setContadorCarrito] = useState(0);
   const [mostrarModal, setMostrarModal] = useState(false);
-  const [terminoBusqueda, setTerminoBusqueda] = useState("");
+  const [busqueda, setBusqueda] = useState("");
   const [buscando, setBuscando] = useState(false);
-  const [mostrandoResultados, setMostrandoResultados] = useState(false);
+  const [mostrarResultados, setMostrarResultados] = useState(false);
   const [imagenGrande, setImagenGrande] = useState("");
-  const [mensajeProductoAñadido, setMensajeProductoAñadido] = useState("");
+  const [mensajeProducto, setMensajeProducto] = useState("");
 
-  // URL de la API
   const API = import.meta.env.VITE_API_URL;
 
-  // Función para obtener la ruta de la imagen
   const obtenerRutaImagen = useCallback((imagen) => {
     if (!imagen) return `${API}/fallback.jpg`;
     if (imagen.startsWith("http")) return imagen;
     return `${API}${imagen}`;
   }, [API]);
 
-  // Función que se ejecuta cuando el login sale bien
-  const onLoginSuccess = useCallback((token, mensaje) => {
+  const onLoginSuccess = (token, mensaje) => {
     setToken(token);
     setMensaje(mensaje);
     setView("tienda");
-    // Cargar productos y carrito
     Promise.all([cargarProductos(token), cargarCarrito(token)]);
-  }, []);
+  };
 
-  // Cargar productos desde la API
   const cargarProductos = async (token) => {
     try {
       const res = await fetch(`${API}/productos`, {
         headers: { Authorization: "Bearer " + token }
       });
       
-      if (!res.ok) return;
-      
-      const data = await res.json();
-      setProductos(data);
-      setProductosFiltrados(data);
+      if (res.ok) {
+        const data = await res.json();
+        setProductos(data);
+        setProductosFiltrados(data);
+      }
     } catch (error) {
-      // Error silencioso
+      console.log("Error cargando productos");
     }
   };
 
-  // Cargar carrito desde la API
   const cargarCarrito = async (token) => {
     try {
       const res = await fetch(`${API}/carrito`, {
         headers: { Authorization: "Bearer " + token }
       });
       
-      if (!res.ok) {
-        setCarrito([]);
-        setContadorAñadidos(0);
-        return;
-      }
-      
-      const data = await res.json();
-      
-      if (Array.isArray(data)) {
-        setCarrito(data);
-        setContadorAñadidos(data.length);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setCarrito(data);
+          setContadorCarrito(data.length);
+        }
       } else {
         setCarrito([]);
-        setContadorAñadidos(0);
+        setContadorCarrito(0);
       }
     } catch (error) {
       setCarrito([]);
-      setContadorAñadidos(0);
+      setContadorCarrito(0);
     }
   };
 
-  // Añadir producto al carrito
-  const handleAñadirCarrito = useCallback(async (idProducto) => {
+  const agregarAlCarrito = async (idProducto) => {
     try {
       const response = await fetch(`${API}/carrito/${idProducto}`, {
         method: "POST",
@@ -95,105 +82,91 @@ export default function Home() {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          productoId: idProducto,
           cantidad: 1,
           talla: "38"
         })
       });
 
       if (response.status === 401) {
-        alert("No autorizado. Por favor, inicia sesión nuevamente.");
+        alert("Necesitas iniciar sesion de nuevo");
         return;
       }
 
-      if (!response.ok) return;
-
-      // Aumentar contador
-      setContadorAñadidos(prev => prev + 1);
-      
-      // Mostrar mensaje de producto añadido
-      const productoAñadido = productos.find(p => p.id === idProducto);
-      setMensajeProductoAñadido(`${productoAñadido?.nombre || 'Producto'} añadido al carrito`);
-      
-      // Ocultar mensaje después de 2 segundos
-      setTimeout(() => {
-        setMensajeProductoAñadido("");
-      }, 2000);
-      
-      // Recargar carrito
-      cargarCarrito(token);
-      
+      if (response.ok) {
+        setContadorCarrito(prev => prev + 1);
+        
+        const producto = productos.find(p => p.id === idProducto);
+        setMensajeProducto(`${producto?.nombre || 'Producto'} agregado al carrito`);
+        
+        setTimeout(() => {
+          setMensajeProducto("");
+        }, 2000);
+        
+        cargarCarrito(token);
+      }
     } catch (error) {
-      alert("Error al añadir producto al carrito");
+      alert("Error al agregar producto");
     }
-  }, [token, API, productos]);
+  };
 
-  // Función cuando se completa una compra
-  const handleCompraRealizada = useCallback(() => {
-    setContadorAñadidos(0);
+  const compraRealizada = () => {
+    setContadorCarrito(0);
     setCarrito([]);
-  }, []);
+  };
 
-  // Función para cerrar sesión
-  const handleLogoutConfirmado = useCallback(() => {
+  const cerrarSesion = () => {
     setToken("");
     setMensaje("");
     setCarrito([]);
     setProductos([]);
     setProductosFiltrados([]);
-    setContadorAñadidos(0);
-    setTerminoBusqueda("");
-    setMostrandoResultados(false);
+    setContadorCarrito(0);
+    setBusqueda("");
+    setMostrarResultados(false);
     setView("menu");
     setMostrarModal(false);
-    setMensajeProductoAñadido("");
-  }, []);
+    setMensajeProducto("");
+  };
 
-  // Función para mostrar imagen grande
-  const handleClickImagen = useCallback((imagen) => {
+  const abrirImagen = (imagen) => {
     setImagenGrande(obtenerRutaImagen(imagen));
-  }, [obtenerRutaImagen]);
+  };
 
-  // Función para cerrar imagen grande
-  const cerrarImagen = useCallback(() => setImagenGrande(""), []);
+  const cerrarImagen = () => setImagenGrande("");
 
-  // Función para buscar productos
-  const handleBuscar = useCallback(async () => {
-    if (!terminoBusqueda.trim()) {
-      alert("Por favor ingresa un término de búsqueda");
+  const buscarProductos = async () => {
+    if (!busqueda.trim()) {
+      alert("Escribe algo para buscar");
       return;
     }
     
     setBuscando(true);
     try {
       const res = await fetch(
-        `${API}/productos/buscar?nombre=${encodeURIComponent(terminoBusqueda)}`,
+        `${API}/productos/buscar?nombre=${encodeURIComponent(busqueda)}`,
         { 
           headers: { Authorization: "Bearer " + token }
         }
       );
       
-      if (!res.ok) return;
-      
-      const resultados = await res.json();
-      setProductosFiltrados(resultados);
-      setMostrandoResultados(true);
+      if (res.ok) {
+        const resultados = await res.json();
+        setProductosFiltrados(resultados);
+        setMostrarResultados(true);
+      }
     } catch (error) {
-      alert("Error al buscar productos");
+      alert("Error en la busqueda");
     } finally {
       setBuscando(false);
     }
-  }, [terminoBusqueda, token, API]);
+  };
 
-  // Función para limpiar búsqueda
-  const limpiarBusqueda = useCallback(() => {
-    setTerminoBusqueda("");
+  const limpiarBusqueda = () => {
+    setBusqueda("");
     setProductosFiltrados(productos);
-    setMostrandoResultados(false);
-    setBuscando(false);
-  }, [productos]);
+    setMostrarResultados(false);
+  };
 
-  // Cargar productos y carrito cuando hay token
   useEffect(() => {
     if (token) {
       cargarProductos(token);
@@ -201,20 +174,25 @@ export default function Home() {
     }
   }, [token]);
 
-  // --- Vistas ---
-  if (view === "menu")
+  if (view === "menu") {
     return (
       <div className="menu-inicial container">
-        <h1>¡Bienvenido a Solex! Donde cada paso tiene flow.</h1>
-        <button onClick={() => setView("login")}>Iniciar sesión</button>
+        <h1>Bienvenido a Solex</h1>
+        <button onClick={() => setView("login")}>Iniciar sesion</button>
         <button onClick={() => setView("register")}>Registrarse</button>
       </div>
     );
+  }
 
-  if (view === "login") return <Login onLoginSuccess={onLoginSuccess} setView={setView} />;
-  if (view === "register") return <Register setView={setView} />;
+  if (view === "login") {
+    return <Login onLoginSuccess={onLoginSuccess} setView={setView} />;
+  }
 
-  if (view === "tienda")
+  if (view === "register") {
+    return <Register setView={setView} />;
+  }
+
+  if (view === "tienda") {
     return (
       <div className="container">
         <div className="menu-superior">
@@ -224,46 +202,45 @@ export default function Home() {
           <div className="buscador-menu">
             <input
               type="text"
-              placeholder="Buscar zapatos..."
-              value={terminoBusqueda}
-              onChange={(e) => setTerminoBusqueda(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleBuscar()}
+              placeholder="Buscar productos..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && buscarProductos()}
               className="input-busqueda-menu"
               disabled={buscando}
             />
             <button
-              onClick={handleBuscar}
+              onClick={buscarProductos}
               className="btn-buscar-menu"
-              disabled={buscando || !terminoBusqueda.trim()}
+              disabled={buscando || !busqueda.trim()}
             >
               Buscar
             </button>
-            {terminoBusqueda && (
+            {busqueda && (
               <button
                 onClick={limpiarBusqueda}
                 className="btn-limpiar-menu"
-                title="Limpiar búsqueda"
               >
                 X
               </button>
             )}
           </div>
 
-          <button onClick={() => setMostrarModal(true)}>Cerrar sesión</button>
+          <button onClick={() => setMostrarModal(true)}>Cerrar sesion</button>
           <button onClick={() => setView("carritoAñadidos")}>
-            {contadorAñadidos > 0 ? `Carrito (${contadorAñadidos})` : "Carrito"}
+            {contadorCarrito > 0 ? `Carrito (${contadorCarrito})` : "Carrito"}
           </button>
         </div>
 
-        {mostrandoResultados && (
+        {mostrarResultados && (
           <div className="info-busqueda">
             <button onClick={limpiarBusqueda} className="btn-limpiar">
-              Ver todos los productos
+              Ver todos
             </button>
           </div>
         )}
 
-        <h3>{mostrandoResultados ? "Resultados de búsqueda:" : "Productos de la tienda:"}</h3>
+        <h3>{mostrarResultados ? "Resultados:" : "Productos:"}</h3>
 
         {productosFiltrados.length > 0 ? (
           <ul className="productos">
@@ -271,39 +248,38 @@ export default function Home() {
               <ProductoCard
                 key={p.id}
                 producto={p}
-                onAñadir={handleAñadirCarrito}
-                onClickImagen={handleClickImagen}
+                onAñadir={agregarAlCarrito}
+                onClickImagen={abrirImagen}
               />
             ))}
           </ul>
         ) : (
           <div className="sin-resultados">
             <p>
-              {mostrandoResultados
-                ? "No se encontraron productos que coincidan con tu búsqueda."
-                : "No hay productos disponibles."}
+              {mostrarResultados
+                ? "No se encontraron productos."
+                : "No hay productos."}
             </p>
-            {mostrandoResultados && (
+            {mostrarResultados && (
               <button onClick={limpiarBusqueda} className="btn-limpiar">
-                Ver todos los productos
+                Ver todos
               </button>
             )}
           </div>
         )}
 
-        {/* Mensaje fijo abajo a la derecha */}
-        {mensajeProductoAñadido && (
+        {mensajeProducto && (
           <div className="mensaje-producto-añadido">
-            {mensajeProductoAñadido}
+            {mensajeProducto}
           </div>
         )}
 
         {mostrarModal && (
           <div className="modal">
             <div className="modal-contenido">
-              <h3>¿Seguro que quieres cerrar sesión?</h3>
-              <button className="confirmar" onClick={handleLogoutConfirmado}>
-                Sí, cerrar
+              <h3>Cerrar sesion?</h3>
+              <button className="confirmar" onClick={cerrarSesion}>
+                Si, cerrar
               </button>
               <button className="cancelar" onClick={() => setMostrarModal(false)}>
                 Cancelar
@@ -314,7 +290,7 @@ export default function Home() {
 
         {imagenGrande && (
           <div className="imagen-modal" onClick={cerrarImagen}>
-            <div className="imagen-modal-contenido" onClick={(e) => e.stopPropagation()}>
+            <div className="imagen-modal-contenido">
               <button className="cerrar-imagen" onClick={cerrarImagen}>
                 ×
               </button>
@@ -324,8 +300,9 @@ export default function Home() {
         )}
       </div>
     );
+  }
 
-  if (view === "carritoAñadidos")
+  if (view === "carritoAñadidos") {
     return (
       <CarritoPage
         token={token}
@@ -333,7 +310,8 @@ export default function Home() {
         productos={productos}
         setCarrito={setCarrito}
         setView={setView}
-        onCompraRealizada={handleCompraRealizada}
+        onCompraRealizada={compraRealizada}
       />
     );
+  }
 }
