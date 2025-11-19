@@ -640,3 +640,15 @@ body {
     font-size: 13px;
   }
 }
+
+
+
+/* === Menú superior pegado arriba === */
+.menu-superior {
+  
+  position: sticky;
+  top: 0; /* ÚNICO CAMBIO: de 10px a 0 */
+  z-index: 1000;
+}
+
+/* TODO LO DEMÁS SE MANTIENE EXACTAMENTE IGUAL */

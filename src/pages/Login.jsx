@@ -97,12 +97,7 @@ export default function Login({ onLoginSuccess, setView }) {
           {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
         </button>
 
-        {/* ✅ Aquí añadimos el mensaje igual que en Register */}
-        {mensaje && (
-          <div className={`login-message ${tipoMensaje}`}>
-            {mensaje}
-          </div>
-        )}
+  
 
         <button onClick={() => setView("menu")} className="login-back-btn">
           Volver al Menú Principal
